@@ -28,10 +28,6 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-  # Hot reload para templates (se usar Thymeleaf)
-  thymeleaf:
-    cache: false
-
 logging:
   level:
     root: INFO
