@@ -2,7 +2,6 @@ package com.hubpedro.bookstoreapi.interfaces.dto;
 
 
 import com.hubpedro.bookstoreapi.shared.GlobalMessages;
-import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
