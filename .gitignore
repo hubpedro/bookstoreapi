@@ -32,10 +32,25 @@ build/
 ### VS Code ###
 .vscode/
 
+# Maven
+maven-cache/
+.m2/
+
+# Docker
+.dockerignore
+
+# Logs
+log.txt
+*.log
+
+# IDE specific
+oopTable.ini
 
 # sh
 backlog.sh
 
+# Git
 .gitignore
 
+# History
 **.history/** */
