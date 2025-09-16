@@ -51,6 +51,7 @@ backlog.sh
 
 # Git
 .gitignore
+.gitignore_*
 
 # History
 **.history/** */
