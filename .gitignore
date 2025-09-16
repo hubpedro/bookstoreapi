@@ -31,3 +31,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+# sh
+backlog.sh
+
+.gitignore
+
+**.history/** */
