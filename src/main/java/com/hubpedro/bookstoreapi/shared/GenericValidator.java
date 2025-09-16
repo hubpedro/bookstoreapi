@@ -2,7 +2,6 @@ package com.hubpedro.bookstoreapi.shared;
 
 import jakarta.validation.ValidationException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
