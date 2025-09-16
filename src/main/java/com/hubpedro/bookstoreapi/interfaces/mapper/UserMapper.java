@@ -1,7 +1,6 @@
 package com.hubpedro.bookstoreapi.interfaces.mapper;
 
 
-import com.hubpedro.bookstoreapi.application.dto.UserData;
 import com.hubpedro.bookstoreapi.domain.model.User;
 import com.hubpedro.bookstoreapi.interfaces.dto.UserRequest;
 import com.hubpedro.bookstoreapi.interfaces.dto.UserResponse;
@@ -10,23 +9,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserMapper {
 
-	public UserData toData(UserRequest userRequest) {
-		return UserData.builder()
-		               .name(userRequest.getName())
-		               .email(userRequest.getEmail())
-		               .password(userRequest.getPassword())
-		               .build();
+	public User toUser(UserRequest userRequest) {
+		return User.create(userRequest.getName(), userRequest.getEmail(), userRequest.getPassword());
 	}
 
-	public UserResponse toResponse(UserData userData) {
+	public UserResponse toResponse(User user) {
 		return UserResponse.builder()
-				.name(userData.getName())
-				.email(userData.getEmail())
-				.password(userData.getPassword()).build();
+				.name(user.getName())
+				.email(user.getEmail())
+				.password(user.getPassword())
+				.build();
 	}
 
-	public User toUser(UserData userData) {
-		return new User(userData.getName(),userData.getEmail(),userData.getPassword());
+	public User toUser(UserResponse userResponse) {
+		return User.create(userResponse.getName(), userResponse.getEmail(), userResponse.getPassword());
 	}
 
 }
