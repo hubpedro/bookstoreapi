@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: spring-dev-db
+    environment:
+      POSTGRES_DB: postgresdb
+      POSTGRES_USER: developer
+      POSTGRES_PASSWORD: devpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - spring-network
+
+  springapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring-dev-app
+    ports:
+      - "8080:8080"
+      - "5005:5005"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/postgresdb
+      - SPRING_DATASOURCE_USERNAME=developer
+      - SPRING_DATASOURCE_PASSWORD=devpass
+    networks:
+      - spring-network
+    depends_on:
+      - postgres
+    volumes:
+      - ./src:/app/src:rw
+      - ./target:/app/target:rw  # Garante que as classes compiladas sejam atualizadas
+      - ./maven-cache:/root/.m2
+
+volumes:
+  postgres-data:
+
+networks:
+  spring-network:
+    driver: bridge
