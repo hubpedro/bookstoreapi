@@ -12,11 +12,6 @@ services:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - spring-network
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U developer -d postgresdb" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   springapp:
     build:
@@ -26,11 +21,6 @@ services:
     ports:
       - "8080:8080"
       - "5005:5005"
-      - "35729:35729"
-    command: >
-      bash -c "
-        mvn spring-boot:run -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005'
-      "
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/postgresdb
@@ -38,24 +28,20 @@ services:
       - SPRING_DATASOURCE_PASSWORD=devpass
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
       - SPRING_DEVTOOLS_LIVERELOAD_ENABLED=true
-      - MAVEN_OPTS=-Xmx1024m
     networks:
       - spring-network
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
     volumes:
-      - .:/app:rw
-      - maven-cache:/root/.m2
-      - target-cache:/app/target
-    working_dir: /app
+      - ./src:/app/src:rw
+      - ./target:/app/target:rw
+      - ./maven-cache:/root/.m2
+      - ./pom.xml:/app/pom.xml:ro
     stdin_open: true
     tty: true
 
 volumes:
   postgres-data:
-  maven-cache:
-  target-cache:
 
 networks:
   spring-network:

@@ -1,103 +1,55 @@
-Vou ajudar a criar um README.md detalhado para seu projeto. Aqui está uma estrutura completa:
-
 # Bookstore API - Sistema de Gerenciamento de Livraria
 
-## 📋 Visão Geral
+## 🔍 Visão Geral
 
-API RESTful para gerenciamento de uma livraria online desenvolvida com Domain-Driven Design (DDD) simplificado e
-arquitetura limpa.
+API RESTful para gerenciamento de uma livraria online, permitindo o cadastro de usuários, gerenciamento de livros e
+controle de empréstimos.
 
-## 🏗️ Estrutura do Projeto (DDD Simplificado)
+## Modelo dos dados
 
-```
-src
-└── main
-    └── java
-        └── com
-            └── hubpedro
-                └── bookstoreapi
-                    ├── application          # Camada de aplicação
-                    │   ├── dto              # Objetos de transferência de dados
-                    │   ├── service          # Serviços de aplicação
-                    │   └── event            # Eventos de aplicação
-                    ├── domain               # Coração do domínio
-                    │   ├── model            # Entidades e agregados
-                    │   ├── repository       # Interfaces de repositório
-                    │   ├── service          # Serviços de domínio
-                    │   └── events           # Eventos de domínio
-                    ├── infra                # Infraestrutura
-                    │   ├── persistence      # Implementações de persistência
-                    │   └── configuration    # Configurações técnicas
-                    └── interfaces           # Adaptadores de entrada/saída
-                        └── rest             # Controladores REST
-```
+### 👤 Cliente
 
-## 🛠️ Tecnologias Utilizadas
+1. `username`: Nome de usuário (deve ser único)
+2. `email`: Endereço de e-mail (deve ser único)
+3. `password`: Senha (mínimo de 8 caracteres)
 
-- Java 17+
-- Spring Boot 3.x
-- Spring Data JPA
-- Hibernate Validator
-- Maven
-- H2 Database
-- PostgreSQL
-- Docker
+### 📘 Livro
 
-## 🚀 Funcionalidades
+1. `title`: Título do livro
+2. `description`: Descrição do conteúdo
+3. `author`
+4. `price`
+5. `stock`
 
-### Sprint 1: Cadastro Básico e Gestão de Livros
+### 🔄 Empréstimo
 
-- [ ] Cadastro de livros com ISBN, título, autor, preço e estoque
-- [ ] Categorização de livros por gênero
-- [ ] Busca de livros por título/autor/categoria
-- [ ] Atualização de estoque
-- [ ] Soft delete de livros
+1. `id`: identificador único de empréstimo
+2. `user`: usuario associado ao emprestimo do livro
+3. `book`: livro associado ao emprestimo do usuario
+4. `created_date`: Data de registro do empréstimo
+5. `last_modified`: Ultima atualização do registro
+6. `loanDate`: Data do emprestimo do livro
+7. `dueDate`: Data do vencimento do livro
+8. `returnDate`: Data em que o livro foi devolvido
 
-### Sprint 2: Gestão de Clientes e Pedidos
+## 📜 Regras de Negócio
 
-- [ ] Cadastro de clientes com endereço
-- [ ] Sistema de autenticação básica
-- [ ] Carrinho de compras
-- [ ] Processamento de pedidos
-- [ ] Histórico de pedidos por cliente
+### 👥 Cadastro de usuário
 
-### Sprint 3: Sistema de Recomendações
+1. `username`: deve ser único
+2. `email`: deve ser único
+3. `password`: deve conter no mínimo 8 caracteres
 
-- [ ] Recomendações baseadas em histórico de compras
-- [ ] Livros mais vendidos por categoria
-- [ ] Sistema de avaliações e reviews
+### 📗 Cadastro de Livro
 
-### Sprint 4: Funcionalidades Avançadas
+1. `title`:entre 5 e 50 caracteres
+2. `description`: não pode ser vazia e deve ser maior que 10 e menor ou igual a 255
+3. `author`: não pode ser vazio e deve ser maior que 10 e menor ou igual a 255
+4. `price`: não pode ser vazio e deve ser maior que 0
 
-- [ ] Integração com gateways de pagamento
-- [ ] Sistema de cupons de desconto
-- [ ] Notificações por e-mail
-- [ ] Relatórios de vendas
+### 📚 Empréstimo de Livro
 
-## 📋 Regras de Negócio Principais
-
-### Domínio de Livros
-
-- ISBN deve ser válido (formato 13 ou 10 dígitos)
-- Preço não pode ser negativo
-- Estoque mínimo de 0 unidades
-- Título obrigatório (mínimo 2 caracteres)
-
-### Domínio de Pedidos
-
-- Pedido deve ter pelo menos 1 item
-- Valor total não pode ser negativo
-- Status do pedido: PENDENTE, PROCESSANDO, ENVIADO, ENTREGUE, CANCELADO
-
-### Domínio de Clientes
-
-- Email deve ser único e válido
-- CPF/CNPJ válido conforme regras da Receita Federal
-- Endereço deve conter CEP válido
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para detalhes.
-
----
-
+1. Um usuário pode emprestar livros disponíveis em estoque
+2. A data de vencimento deve ser posterior à data do empréstimo
+3. O livro deve ser marcado como devolvido ao registrar a dataDevolucao
+4. Não é permitido emprestar o mesmo livro para múltiplos usuários simultaneamente

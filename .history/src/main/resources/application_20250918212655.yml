@@ -1,0 +1,56 @@
+spring:
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/java,src/main/resources
+      poll-interval: 1000
+      quiet-period: 400
+      trigger-file: .reloadtrigger
+    livereload:
+      enabled: true
+      port: 35729
+  web:
+    resources:
+      cache:
+        period: 0
+      chain:
+        cache: false
+  datasource:
+    url: jdbc:postgresql://postgres:5432/postgresdb
+    username: developer
+    password: devpass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+logging:
+  level:
+    root: INFO
+    com.hubpedro: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    "[org.springframework.boot.devtools]": DEBUG
+
+# Actuator para monitoramento
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env
+  endpoint:
+    health:
+      show-details: always
+
+# Configuração do servidor
+server:
+  port: 8080
+  error:
+    include-stacktrace: always

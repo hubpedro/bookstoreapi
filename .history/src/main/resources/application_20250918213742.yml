@@ -3,8 +3,8 @@ spring:
     restart:
       enabled: true
       additional-paths: src/main/java,src/main/resources
-      poll-interval: 2s
-      quiet-period: 1s
+      poll-interval: 1000
+      quiet-period: 400
       trigger-file: .reloadtrigger
     livereload:
       enabled: true
@@ -16,7 +16,7 @@ spring:
       chain:
         cache: false
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgresdb
+    url: jdbc:postgresql://postgres:5432/postgresdb
     username: developer
     password: devpass
     driver-class-name: org.postgresql.Driver
@@ -34,33 +34,23 @@ logging:
   level:
     root: INFO
     '[com.hubpedro]': DEBUG
-    '[org.springframework.web]': DEBUG
-    '[org.hibernate.SQL]': DEBUG
-    '[org.hibernate.type.descriptor.sql.BasicBinder]': TRACE
-    '[org.springframework.boot.devtools]': DEBUG
-  pattern:
-    console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+      '[org.springframework.boot.devtools]': DEBUG
 
 # Actuator para monitoramento
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,env,loggers
+        include: health,info,metrics,env
   endpoint:
     health:
       show-details: always
-    loggers:
-      enabled: true
 
 # Configuração do servidor
 server:
   port: 8080
   error:
     include-stacktrace: always
-    include-message: always
-    include-exception: true
-    include-binding-errors: always
-    include-path: always
-  servlet:
-    context-path: /
