@@ -31,12 +31,8 @@ public class UserRequest implements Serializable {
 
 	@Size(min = 8, max = 255, message = "password between 8 and 255 length")
 	private String password;
-
-
-	private LocalDateTime requestAt = LocalDateTime.now();
-
 	@Override
 	public String toString() {
-		return String.format("UserRequest[name={%s} email={%s} requestAt={%s}]", this.name, this.email, requestAt);
+		return String.format("UserRequest[name={%s} email={%s} requestAt={%s}]", this.name, this.email);
 	}
 }

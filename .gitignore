@@ -54,6 +54,6 @@ backlog.sh
 .gitignore_*
 
 # History
-.history/** */
+.history/*
 
 dev-setup.sh

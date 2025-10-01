@@ -14,117 +14,142 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import jdk.jfr.BooleanFlag;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.format.annotation.NumberFormat;
-import org.springframework.format.annotation.NumberFormat.Style;
 
+@Slf4j
 @Entity(name = "book")
 @Getter
 @Setter
 public class Book {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	private Long id;
 
-	@OneToMany(mappedBy = "book")
-	private List<Loan> loans = new ArrayList<>();
+	@OneToMany(mappedBy = "book") private List<Loan> loans = new ArrayList<>();
 
-	@ManyToMany(mappedBy = "books")
-	private Set<User> users = new HashSet<>();
+	@ManyToMany(mappedBy = "books") private Set<User> users = new HashSet<>();
 
-	@Size(min = 5, max = 50)
+	@Size(min = 5, max = 255)
 	@NotBlank
 	private String title;
 
-	@Size(max = 255)
-	private String description;
+	@Size(max = 255) private String description;
 
 	@NotBlank
 	@Size(min = 10, max = 255)
 	private String author;
 
-	@NumberFormat(style = Style.CURRENCY)
 	private BigDecimal price;
 
-	@NumberFormat(style = Style.NUMBER)
-	private int stock;
+	@NumberFormat(style = NumberFormat.Style.NUMBER) private int stock;
 
+	@BooleanFlag private boolean available;
 
-	protected Book() {
+	public Book() {
+
 	}
 
-	private Book(String title,
-	             String description,
-	             String author,
-	             BigDecimal price,
-	             int stock) {
+	private Book(String title, String author, String description, BigDecimal price, int stock) {
+
 		this.title       = title;
-		this.description = description;
 		this.author      = author;
+		this.description = description;
 		this.price       = price;
 		this.stock       = stock;
+		this.available   = stock >= 1;
 	}
 
-	public static Book create(
-			String title,
-			String author,
-			String description,
-			BigDecimal price,
-			int stock) {
-		return new Book(
-				setTitle(title),
-				setDescription(description),
-				setAuthor(author),
-				setPrice(price),
-				setStock(stock));
+	/**
+	 * Create a new book.
+	 *
+	 * @param title
+	 * 		The title of the book. Must be between 5 and 50 characters.
+	 * @param author
+	 * 		The author of the book. Must be between 10 and 255 characters.
+	 * @param description
+	 * 		The description of the book. Must be between 10 and 255 characters.
+	 * @param price
+	 * 		The price of the book. Must be greater than 0.
+	 * @param stock
+	 * 		The stock of the book. Must be greater than 0.
+	 *
+	 * @return The created book. If validates correctly.
+	 */
+	@Contract("_, _, _, _, _ -> new")
+	public static @NotNull Book create(String title, String author, String description, BigDecimal price, int stock) {
+
+		Book newBook = new Book(validateTitle(title), validateAuthor(author), validateDescription(description), validatePrice(price), validateStock(stock));
+		return newBook;
 	}
 
-	private static String setTitle(String title) {
-		if (title != null && (title.length() > 5 && title.length() <= 50)) {
+	@Contract("null -> fail")
+	public static String validateTitle(String title) {
+
+		if (null != title && (title.length() > 5 && title.length() <= 255)) {
 			return title;
 		}
 		throw new DomainValidateException("Invalid title");
 	}
 
-	private static String setDescription(String description) {
-		if (description != null && !description.isBlank() && description.length() > 10 && description.length() <= 255) {
-			return description;
-		}
-		throw new DomainValidateException("Invalid description");
-	}
+	@Contract("null -> fail")
+	public static String validateAuthor(String author) {
 
-	private static String setAuthor(String author) {
-		if (author != null && !author.isBlank() && author.length() > 10 && author.length() <= 255) {
+		if (null != author && !author.isBlank() && 10 < author.length() && 255 >= author.length()) {
 			return author;
 		}
 		throw new DomainValidateException("Invalid author");
 
 	}
 
-	private static BigDecimal setPrice(BigDecimal price) {
-		if (price != null && price.compareTo(BigDecimal.ZERO) > 0) {
-			return price;
+	@Contract("null -> fail")
+	private static String validateDescription(String description) {
+
+		if (null != description && !description.isBlank() && 10 < description.length() && 255 >= description.length()) {
+			return description;
 		}
-		throw new DomainValidateException("Invalid price");
+		throw new DomainValidateException("Invalid description");
 	}
 
-	public static int setStock(int stock) {
-		if (stock >= 0) {
+	public static BigDecimal validatePrice(BigDecimal price) throws DomainValidateException {
+
+		if (price == null) {
+			throw new DomainValidateException("Price cannot be null");
+		}
+		if (price.compareTo(BigDecimal.ZERO) > 0) {
+			return price;
+		}
+		throw new DomainValidateException("Price cannot be zero or negative");
+	}
+
+	@Contract("_ -> param1")
+	public static int validateStock(int stock) {
+
+		if (stock >= 1) {
 			return stock;
 		}
+		
 		throw new DomainValidateException("stock cannot be less than 0");
 	}
 
-	public Set<User> getUsers() {
-		return users;
+	public static boolean validateAvailability(boolean available) {
+
+		return available;
 	}
 
-	public void updateFrom(Book book) {
-		this.title       = setTitle(book.getTitle());
-		this.description = setDescription(book.getDescription());
-		this.author      = setAuthor(book.getAuthor());
-		this.price       = setPrice(book.getPrice());
-		this.stock       = book.getStock();
+	public void updateFrom(@NotNull Book book) {
+
+		title       = validateTitle(book.title);
+		description = validateDescription(book.description);
+		author      = validateAuthor(book.author);
+		price       = validatePrice(book.price);
+		stock       = validateStock(book.stock);
 	}
+
 }

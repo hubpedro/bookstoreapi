@@ -2,6 +2,8 @@ package com.hubpedro.bookstoreapi.controller;
 
 import com.hubpedro.bookstoreapi.dto.BookRequest;
 import com.hubpedro.bookstoreapi.dto.BookResponse;
+import com.hubpedro.bookstoreapi.mapper.BookMapper;
+import com.hubpedro.bookstoreapi.model.Book;
 import com.hubpedro.bookstoreapi.serivce.impl.BookServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,8 +25,11 @@ public class BookController {
 	private final Logger          log = LoggerFactory.getLogger(BookController.class);
 	private final BookServiceImpl bookService;
 
-	public BookController(BookServiceImpl bookService) {
+	private final BookMapper bookMapper;
+
+	public BookController (BookServiceImpl bookService,BookMapper bookMapper) {
 		this.bookService = bookService;
+		this.bookMapper = bookMapper;
 	}
 
 	@PostMapping
@@ -33,11 +38,15 @@ public class BookController {
 	                       @ApiResponse(responseCode = "400", description = "Invalid input")})
 	public ResponseEntity<BookResponse> createBook(@Valid @RequestBody BookRequest request) {
 		log.debug("REST request to save Book : {}", request);
-		BookResponse createdBook = bookService.create(request);
-		if (createdBook.getId() != null) {
-			log.info("BookServiceImpl.create[ createdBook= ".concat(createdBook.toString()));
+
+		Book createdBook = this.bookService.create(request);
+
+		BookResponse createdBookResponse = this.bookMapper.toResponse(createdBook);
+
+		if ( null != createdBookResponse.getId() ) {
+			this.log.info("BookServiceImpl.create[ createdBook= " + createdBookResponse);
 		}
-		return ResponseEntity.status(HttpStatus.CREATED).body(createdBook);
+		return ResponseEntity.status(HttpStatus.CREATED).body(createdBookResponse);
 	}
 
 }

@@ -1,17 +1,18 @@
 package com.hubpedro.bookstoreapi.serivce.impl;
 
-
 import com.hubpedro.bookstoreapi.dto.BookRequest;
-import com.hubpedro.bookstoreapi.dto.BookResponse;
 import com.hubpedro.bookstoreapi.mapper.BookMapper;
 import com.hubpedro.bookstoreapi.model.Book;
 import com.hubpedro.bookstoreapi.repository.BookRepository;
 import com.hubpedro.bookstoreapi.serivce.BookService;
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -22,64 +23,75 @@ public class BookServiceImpl implements BookService {
 	private final BookMapper     bookMapper;
 
 	public BookServiceImpl(BookRepository bookRepository, BookMapper bookMapper) {
+
+		super();
 		this.bookRepository = bookRepository;
 		this.bookMapper     = bookMapper;
 	}
 
 	@Override
 	@Transactional
-	public BookResponse create(BookRequest request) {
-		Book book = Book.create(request.getTitle(), request.getAuthor(), request.getDescription(), request.getPrice(), request.getStock());
+	public Book create (BookRequest request) {
 
-		logger.info("BookServiceImpl.create[ book= ".concat(book.toString()));
-		bookRepository.save(book);
+		Book bookRequested = this.bookMapper.toData(request);
 
-		return bookMapper.toResponse(book);
+		if ( null == bookRequested ) {
+			throw new RuntimeException("BookRequest is invalid.");
+		}
+
+		Book newBok = this.bookRepository.save(bookRequested);
+
+		this.logger.info("BookServiceImpl.create[ book= {}",newBok);
+
+		return newBok;
 	}
 
 	@Override
 	@Transactional
 	public Book update(Long id, Book book) {
 
+		return this.getBook(id,book,"BookServiceImpl.update[ book= {}");
+	}
 
-		Book bookUpdate = bookRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Book not " + "found"));
+	@NotNull private Book getBook (Long id,Book book,String s) {
+
+		Optional<Book> id1        = this.bookRepository.findById(id);
+		Book           bookUpdate = id1.orElseThrow(() -> new IllegalArgumentException("Book not " + "found"));
 
 		bookUpdate.updateFrom(book);
-		logger.info("BookServiceImpl.update[ book= ".concat(bookUpdate.toString()));
+		this.logger.info(s,bookUpdate);
 
-		return bookRepository.save(book);
+		return this.bookRepository.save(book);
 	}
 
 	@Override
 	@Transactional
 	public Book patch(Long id, Book book) {
 
-		Book existingBook = bookRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Book not " + "found"));
-
-		existingBook.updateFrom(book);
-
-		logger.info("BookServiceImpl.patch[ book={%s}]".concat(existingBook.toString()));
-
-		return bookRepository.save(book);
+		return this.getBook(id,book,"BookServiceImpl.patch[ book={%s}]{}");
 
 	}
 
 	@Override
 	public List<Book> findAll() {
-		return bookRepository.findAll();
+
+		return this.bookRepository.findAll();
 	}
 
 	@Override
 	@Transactional
 	public void delete(Long id) {
-		Book book = bookRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Book not found with id: " + id));
-		bookRepository.delete(book);
-		logger.info("Deleting book with id: {}", id);
+
+		Optional<Book> id1  = this.bookRepository.findById(id);
+		Book           book = id1.orElseThrow(() -> new IllegalArgumentException("Book not found with id: " + id));
+		this.bookRepository.delete(book);
+		this.logger.info("Deleting book with an id: {}",id);
 	}
 
 	public Book findById(Long id) {
-		return bookRepository.findById(id)
-		                     .orElseThrow(() -> new IllegalArgumentException("id not found"));
+
+		Optional<Book> id1 = this.bookRepository.findById(id);
+		return id1.orElseThrow(() -> new IllegalArgumentException("id not found"));
 	}
 
 }
