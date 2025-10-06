@@ -18,4 +18,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	public ResponseEntity<ProblemDetail> handleUserEmailAlreadyExists(UserEmailAlreadyExists ex, WebRequest request) {
 		return ResponseEntity.status(ex.getStatusCode()).body(ex.getBody());
 	}
+
+	@ExceptionHandler(UserNotFoundException.class)
+	public ResponseEntity<ProblemDetail> handleUserNotFoundException(UserNotFoundException ex, WebRequest request) {
+
+		return ResponseEntity.status(ex.getStatusCode()).body(ex.getBody());
+	}
 }

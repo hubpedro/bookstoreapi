@@ -1,6 +1,6 @@
 package com.hubpedro.bookstoreapi.model;
 
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -32,6 +32,7 @@ public class Loan {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
+	@JsonBackReference // Indica o lado que NÃO será serializado
 	private User user;
 
 	@ManyToOne(fetch = FetchType.LAZY)

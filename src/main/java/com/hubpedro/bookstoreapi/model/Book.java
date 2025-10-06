@@ -1,19 +1,9 @@
 package com.hubpedro.bookstoreapi.model;
 
 import com.hubpedro.bookstoreapi.exceptions.DomainValidateException;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import jdk.jfr.BooleanFlag;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,6 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.format.annotation.NumberFormat;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Entity(name = "book")
@@ -101,7 +97,7 @@ public class Book {
 	@Contract("null -> fail")
 	public static String validateAuthor(String author) {
 
-		if (null != author && !author.isBlank() && 10 < author.length() && 255 >= author.length()) {
+        if (null != author && !author.isBlank() && author.length() > 5 && author.length() <= 255) {
 			return author;
 		}
 		throw new DomainValidateException("Invalid author");
@@ -136,11 +132,6 @@ public class Book {
 		}
 		
 		throw new DomainValidateException("stock cannot be less than 0");
-	}
-
-	public static boolean validateAvailability(boolean available) {
-
-		return available;
 	}
 
 	public void updateFrom(@NotNull Book book) {

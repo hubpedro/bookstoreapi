@@ -1,7 +1,6 @@
 package com.hubpedro.bookstoreapi.dto;
 
-import com.hubpedro.bookstoreapi.model.Book;
-import com.hubpedro.bookstoreapi.model.User;
+import com.hubpedro.bookstoreapi.model.Loan;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,9 +15,24 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoanResponse {
+
+	private Long userId;
 	private Long      id;
-	private User      user;
-	private Book      book;
+
+	private Long bookId;
+
+	public LoanResponse(Loan loan) {
+
+		this.id            = loan.getId();
+		this.userId        = loan.getUser().getId();
+		this.bookId        = loan.getBook().getId();
+		this.created_date  = loan.getCreated_date();
+		this.last_modified = loan.getLast_modified();
+		this.loanDate      = loan.getLoanDate();
+		this.dueDate       = loan.getDueDate();
+		this.returnDate    = loan.getReturnDate();
+		this.status        = loan.getStatus();
+	}
 	private LocalDate created_date;
 	private LocalDate last_modified;
 	private LocalDate loanDate;
@@ -26,4 +40,3 @@ public class LoanResponse {
 	private LocalDate returnDate;
 	private String    status;
 }
-

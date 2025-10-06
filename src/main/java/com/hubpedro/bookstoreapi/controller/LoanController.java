@@ -1,13 +1,12 @@
 package com.hubpedro.bookstoreapi.controller;
 
 import com.hubpedro.bookstoreapi.dto.LoanResponse;
-import com.hubpedro.bookstoreapi.model.Loan;
 import com.hubpedro.bookstoreapi.serivce.impl.LoanService;
-import org.springdoc.core.converters.models.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,16 +32,15 @@ public class LoanController {
 	}
 
 	@GetMapping
-	public ResponseEntity<Pageable> getAllLoan(
+	public ResponseEntity<Page<LoanResponse>> getAllLoan(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "5") int size) throws RuntimeException {
-		try {
-			PageRequest paging   = PageRequest.of(page, size);
-			Page<Loan>  loanPage = loanService.findAll(paging);
-			return ResponseEntity.status(HttpStatusCode.valueOf(201)).body((Pageable) loanPage.toList());
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e.getMessage());
+			@RequestParam(defaultValue = "10") int size) throws RuntimeException
+	{
+
+		Pageable pageable = PageRequest.of(page, size, Sort.by("id")); // Ordenação explícita
+
+		Page<LoanResponse> loanPage = loanService.findAllPaginated(pageable);
+		return ResponseEntity.ok(loanPage);
 		}
 
 	}
@@ -80,4 +78,4 @@ public class LoanController {
 //                patchedUser = userAppService.patchUser(id, LoanRequest);
 //        return ResponseEntity.ok(patchedUser);
 //    }
-}
+//}

@@ -1,8 +1,11 @@
 spring:
+  security:
+    user:
+      password: 8708fb7d-6db9-4958-ac1f-b87c834d5b6d
+
   devtools:
     restart:
       enabled: true
-      additional-paths: src/main/java,src/main/resources
       poll-interval: 2s
       quiet-period: 1s
       trigger-file: .reloadtrigger
@@ -38,6 +41,7 @@ logging:
     '[org.hibernate.SQL]': DEBUG
     '[org.hibernate.type.descriptor.sql.BasicBinder]': TRACE
     '[org.springframework.boot.devtools]': DEBUG
+    '[org.springframework.security]': DEBUG
   pattern:
     console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"
 
@@ -51,7 +55,7 @@ management:
     health:
       show-details: always
     loggers:
-      enabled: true
+      access: read_only
 
 # Configuração do servidor
 server:
@@ -64,3 +68,16 @@ server:
     include-path: always
   servlet:
     context-path: /
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+
+
+jwt:
+  secret: ${JWT_SECRET:100aa1ca3f3948f0b15f80da132f640d}
+  expiration: ${JWT_EXPIRATION:3600000}

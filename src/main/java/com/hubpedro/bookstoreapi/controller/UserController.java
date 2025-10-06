@@ -1,26 +1,19 @@
 package com.hubpedro.bookstoreapi.controller;
 
+import com.hubpedro.bookstoreapi.config.ApiPaths;
 import com.hubpedro.bookstoreapi.dto.UserRequest;
 import com.hubpedro.bookstoreapi.dto.UserResponse;
 import com.hubpedro.bookstoreapi.mapper.UserMapper;
 import com.hubpedro.bookstoreapi.model.User;
 import com.hubpedro.bookstoreapi.serivce.impl.UserService;
 import jakarta.validation.Valid;
-import java.util.List;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping(ApiPaths.USERS)
 public class UserController {
 
 	private final UserService userService;
@@ -32,14 +25,21 @@ public class UserController {
 	}
 
 	@PostMapping
-	public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest userDTO) {
-		UserResponse createdUser = this.userService.createUser(userDTO);
-		return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+	public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest userDTO) throws Exception {
+
+		User createdUser = this.userService.createUser(userDTO);
+		return new ResponseEntity<UserResponse>(userMapper.toResponse(createdUser), HttpStatus.CREATED);
 	}
 
 	@GetMapping
-	public List<UserResponse> getAllUsers() {
-		return this.userService.getAllUsers();
+	public ResponseEntity<Page<User>> getPaginatedUsers(
+			@RequestParam(defaultValue = "") String author,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "5") int size
+
+	) {
+		Page<User> users = this.userService.listPaginated(author, page, size);
+		return ResponseEntity.accepted().body(users);
 	}
 
 	@GetMapping("/{id}")

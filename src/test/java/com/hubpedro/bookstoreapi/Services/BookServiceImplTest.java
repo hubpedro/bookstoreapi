@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -66,8 +67,15 @@ class BookServiceImplTest {
 	void findBookId_WhenAnyId_ShouldThrowException(Long invalidId)
 	{
 
-		when(bookService.findById(invalidId)).thenThrow(
-				new IllegalArgumentException());
+		when(bookRepository.findById(invalidId)).thenReturn(Optional.empty());
+
+
+		assertThrows(IllegalArgumentException.class, () -> {
+			bookService.findById(invalidId);
+		});
+
+		verify(bookRepository, times(1)).findById(invalidId);
+
 	}
 
 	/**
@@ -133,6 +141,38 @@ class BookServiceImplTest {
 		verify(bookMapper).toData(bookRequest);
 		verify(bookRepository, never()).save(any(Book.class));
 
+	}
+
+	@Test
+	void deleteBookById_WhenBookExists_ShouldDeleteBook() {
+		// Arrange
+		Long bookId   = 1L;
+		Book mockBook = mock(Book.class);
+
+		when(bookRepository.findById(bookId)).thenReturn(Optional.of(mockBook));
+		// Não é necessário configurar o delete, pois é void. Mas podemos usar verify.
+
+		// Act
+		bookService.delete(bookId);
+
+		// Assert
+		verify(bookRepository).findById(bookId);
+		verify(bookRepository).delete(mockBook);
+	}
+
+	@Test
+	void deleteBookById_WhenBookNotExists_ShouldThrowException() {
+		// Arrange
+		Long bookId = 1L;
+		when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
+
+		// Act & Assert
+		assertThrows(IllegalArgumentException.class, () -> {
+			bookService.delete(bookId);
+		});
+
+		verify(bookRepository).findById(bookId);
+		verify(bookRepository, never()).delete(any(Book.class));
 	}
 
 }
