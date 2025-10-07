@@ -1,4 +1,4 @@
-package com.hubpedro.bookstoreapi.serivce.impl;
+package com.hubpedro.bookstoreapi.service.impl;
 
 import com.hubpedro.bookstoreapi.dto.UserRequest;
 import com.hubpedro.bookstoreapi.dto.UserResponse;

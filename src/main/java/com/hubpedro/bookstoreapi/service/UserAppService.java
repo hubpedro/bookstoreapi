@@ -1,4 +1,4 @@
-package com.hubpedro.bookstoreapi.serivce;
+package com.hubpedro.bookstoreapi.service;
 
 
 public interface UserAppService {

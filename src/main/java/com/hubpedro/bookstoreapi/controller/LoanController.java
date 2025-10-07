@@ -1,7 +1,7 @@
 package com.hubpedro.bookstoreapi.controller;
 
 import com.hubpedro.bookstoreapi.dto.LoanResponse;
-import com.hubpedro.bookstoreapi.serivce.impl.LoanService;
+import com.hubpedro.bookstoreapi.service.impl.LoanService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

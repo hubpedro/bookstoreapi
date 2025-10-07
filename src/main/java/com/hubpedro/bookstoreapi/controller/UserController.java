@@ -5,7 +5,7 @@ import com.hubpedro.bookstoreapi.dto.UserRequest;
 import com.hubpedro.bookstoreapi.dto.UserResponse;
 import com.hubpedro.bookstoreapi.mapper.UserMapper;
 import com.hubpedro.bookstoreapi.model.User;
-import com.hubpedro.bookstoreapi.serivce.impl.UserService;
+import com.hubpedro.bookstoreapi.service.impl.UserService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;

@@ -8,7 +8,7 @@ import com.hubpedro.bookstoreapi.mapper.UserMapper;
 import com.hubpedro.bookstoreapi.model.User;
 import com.hubpedro.bookstoreapi.repository.UserRepositoryJPA;
 import com.hubpedro.bookstoreapi.security.JwtUtil;
-import com.hubpedro.bookstoreapi.serivce.impl.UserService;
+import com.hubpedro.bookstoreapi.service.impl.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

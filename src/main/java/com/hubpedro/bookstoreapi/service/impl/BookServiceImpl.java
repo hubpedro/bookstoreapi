@@ -1,4 +1,4 @@
-package com.hubpedro.bookstoreapi.serivce.impl;
+package com.hubpedro.bookstoreapi.service.impl;
 
 import com.hubpedro.bookstoreapi.dto.BookRequest;
 import com.hubpedro.bookstoreapi.exceptions.DomainException;
@@ -6,7 +6,7 @@ import com.hubpedro.bookstoreapi.exceptions.DomainValidateException;
 import com.hubpedro.bookstoreapi.mapper.BookMapper;
 import com.hubpedro.bookstoreapi.model.Book;
 import com.hubpedro.bookstoreapi.repository.BookRepository;
-import com.hubpedro.bookstoreapi.serivce.BookService;
+import com.hubpedro.bookstoreapi.service.BookService;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
