@@ -1,12 +1,15 @@
 package com.hubpedro.bookstoreapi.service.impl;
 
+import com.hubpedro.bookstoreapi.config.Roles;
 import com.hubpedro.bookstoreapi.dto.UserRequest;
 import com.hubpedro.bookstoreapi.dto.UserResponse;
 import com.hubpedro.bookstoreapi.exceptions.DomainValidateException;
 import com.hubpedro.bookstoreapi.exceptions.UserNotFoundException;
 import com.hubpedro.bookstoreapi.exceptions.UsernameAlreadyExistsException;
 import com.hubpedro.bookstoreapi.mapper.UserMapper;
+import com.hubpedro.bookstoreapi.model.Role;
 import com.hubpedro.bookstoreapi.model.User;
+import com.hubpedro.bookstoreapi.repository.RoleRepository;
 import com.hubpedro.bookstoreapi.repository.UserRepositoryJPA;
 import com.hubpedro.bookstoreapi.security.JwtUtil;
 import org.springframework.data.domain.Page;
@@ -17,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -30,12 +34,16 @@ public class UserService {
 
 	private final JwtUtil jwtUtil;
 
-	public UserService(UserMapper userMapper, UserRepositoryJPA userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+	private final RoleRepository roleRepository;
+
+	public UserService(RoleRepository roleRepository, UserMapper userMapper, UserRepositoryJPA userRepository,
+	                   PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
 
 		this.userRepository = userRepository;
 		this.userMapper     = userMapper;
 		this.passwordEncoder = passwordEncoder;
 		this.jwtUtil = jwtUtil;
+		this.roleRepository = roleRepository;
 	}
 
 	public Page<User> listPaginated(String name, int page, int size) {
@@ -43,7 +51,7 @@ public class UserService {
 		return userRepository.findByName(name, pageable);
 	}
 
-	@Transactional
+	@Transactional(rollbackFor = {DomainValidateException.class, UsernameAlreadyExistsException.class})
 	public User createUser(UserRequest userRequest) throws DomainValidateException {
 		User user = userMapper.toUser(userRequest);
 
@@ -55,11 +63,12 @@ public class UserService {
 			throw new UsernameAlreadyExistsException("Username or email already exists");
 		}
 
+		Role userRole = roleRepository.findByName(Roles.USER)
+				                .orElseThrow(() -> new RuntimeException("Default role not found: ROLE_USER"));
+
 
 		user.setPassword(passwordEncoder.encode((user.getPassword())));
-		String token = jwtUtil.generateToken(user);
-		System.out.println(token);
-
+		user.setRoles(Collections.singleton(userRole));
 		return userRepository.save(user);
 	}
 

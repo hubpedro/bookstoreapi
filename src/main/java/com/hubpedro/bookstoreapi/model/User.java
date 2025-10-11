@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity(name = "users")
 @Getter
@@ -49,8 +48,13 @@ public class User implements UserDetails {
 	private List<Loan> loans = new ArrayList<>();
 
 
-	@ElementCollection(fetch = FetchType.EAGER)
-	private Set<String> roles = new HashSet<>();
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(
+			name = "user_roles",
+			joinColumns = @JoinColumn(name = "user_id"),
+			inverseJoinColumns = @JoinColumn(name = "role_id")
+	)
+	private Set<Role> roles = new HashSet<>();
 
 	private User(String name, String email, String password) throws DomainValidateException {
 
@@ -146,16 +150,20 @@ public class User implements UserDetails {
 	 */
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return roles.stream()
-				       .map(roles -> new SimpleGrantedAuthority("ROLE_" + roles.toUpperCase()))
-				       .collect(Collectors.toSet());
+		Set<GrantedAuthority> authorities = new HashSet<>();
+
+		roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role.getName())));
+
+		roles.forEach(role -> role.getPermissions().forEach(permission -> authorities.add(new SimpleGrantedAuthority(permission.getName()))));
+
+		return authorities;
 	}
 
 	/**
-	 * Returns the username used to authenticate the user. Cannot return
+	 * Returns the email used to authenticate the user. Cannot return
 	 * <code>null</code>.
 	 *
-	 * @return the username (never <code>null</code>)
+	 * @return the email (never <code>null</code>)
 	 */
 	@Override
 	public String getUsername() {

@@ -1,6 +1,6 @@
 package com.hubpedro.bookstoreapi.controller;
 
-import com.hubpedro.bookstoreapi.config.ApiPaths;
+import com.hubpedro.bookstoreapi.config.ProtectedEndPoints;
 import com.hubpedro.bookstoreapi.dto.UserRequest;
 import com.hubpedro.bookstoreapi.dto.UserResponse;
 import com.hubpedro.bookstoreapi.mapper.UserMapper;
@@ -10,10 +10,11 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(ApiPaths.USERS)
+@RequestMapping(ProtectedEndPoints.USERS)
 public class UserController {
 
 	private final UserService userService;
@@ -24,12 +25,12 @@ public class UserController {
 		this.userMapper  = userMapper;
 	}
 
-	@PostMapping
-	public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest userDTO) throws Exception {
-
-		User createdUser = this.userService.createUser(userDTO);
-		return new ResponseEntity<UserResponse>(userMapper.toResponse(createdUser), HttpStatus.CREATED);
-	}
+//    @PostMapping("/register")
+//	public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest userDTO) throws Exception {
+//
+//		User createdUser = this.userService.createUser(userDTO);
+//        return new ResponseEntity<>(userMapper.toResponse(createdUser), HttpStatus.CREATED);
+//    }
 
 	@GetMapping
 	public ResponseEntity<Page<User>> getPaginatedUsers(
@@ -43,7 +44,8 @@ public class UserController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
 		User         user         = this.userService.getUserById(id);
 		UserResponse userResponse = this.userMapper.toResponse(user);
 		if (user != null) {
@@ -55,7 +57,8 @@ public class UserController {
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
 		this.userService.deleteUser(id);
 		return ResponseEntity.noContent().build();
 	}

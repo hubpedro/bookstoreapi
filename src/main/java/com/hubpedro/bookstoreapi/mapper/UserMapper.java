@@ -6,15 +6,11 @@ import com.hubpedro.bookstoreapi.exceptions.DomainValidateException;
 import com.hubpedro.bookstoreapi.model.User;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
-
 @Component
 public class UserMapper {
 
 	public User toUser(UserRequest userRequest) throws DomainValidateException {
-		User user = User.create(userRequest.getName(), userRequest.getEmail(), userRequest.getPassword());
-		user.setRoles(Set.of("user"));
-		return user;
+		return User.create(userRequest.getName(), userRequest.getEmail(), userRequest.getPassword());
 	}
 
 	public UserResponse toResponse(User user) {

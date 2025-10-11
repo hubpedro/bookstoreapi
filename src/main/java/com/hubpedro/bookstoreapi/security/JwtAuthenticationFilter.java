@@ -1,12 +1,15 @@
 package com.hubpedro.bookstoreapi.security;
 
 import com.hubpedro.bookstoreapi.service.impl.CustomUserDetailsService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -14,6 +17,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -46,17 +51,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 			String username = jwtUtil.extractUsername(token); // extrai o nome do usuário
 
-			if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-				UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                // Pode manter UserDetails para username/password se precisar
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
-				if (jwtUtil.validateToken(token, userDetails)) {
-					UsernamePasswordAuthenticationToken authToken =
-							new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                if (jwtUtil.validateToken(token, userDetails)) {
+                    Claims claims = jwtUtil.getClaims(token); // método que retorna Claims
+                    List<String> permissions = claims.get("permissions", List.class);
 
-					authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-					SecurityContextHolder.getContext().setAuthentication(authToken);
-				}
-			}
+                    List<GrantedAuthority> authorities = permissions.stream()
+                                                                    .map(SimpleGrantedAuthority::new)
+                                                                    .collect(Collectors.toList());
+
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            }
 		}
 
 		filterChain.doFilter(request, response);

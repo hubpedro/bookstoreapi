@@ -1,7 +1,12 @@
 package com.hubpedro.bookstoreapi.model;
 
 import com.hubpedro.bookstoreapi.exceptions.DomainValidateException;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jdk.jfr.BooleanFlag;
@@ -107,7 +112,7 @@ public class Book {
 	@Contract("null -> fail")
 	private static String validateDescription(String description) {
 
-		if (null != description && !description.isBlank() && 10 < description.length() && 255 >= description.length()) {
+		if (null != description && !description.isBlank() && description.length() > 10 && description.length() <= 255) {
 			return description;
 		}
 		throw new DomainValidateException("Invalid description");

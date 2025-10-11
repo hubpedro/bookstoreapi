@@ -1,6 +1,6 @@
 package com.hubpedro.bookstoreapi.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hubpedro.bookstoreapi.config.ProtectedEndPoints;
 import com.hubpedro.bookstoreapi.dto.BookRequest;
 import com.hubpedro.bookstoreapi.dto.BookResponse;
 import com.hubpedro.bookstoreapi.exceptions.DomainValidateException;
@@ -15,18 +15,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 /**
  * Controller for managing books.
  */
-@RequestMapping("/api/book")
+@RequestMapping(ProtectedEndPoints.BOOKS)
 @RestController
 public class BookController {
 
@@ -36,22 +33,14 @@ public class BookController {
 
 	private final BookMapper bookMapper;
 
-	private final ObjectMapper objectMapper;
 
-
-	public BookController(BookServiceImpl bookService, BookMapper bookMapper, ObjectMapper objectMapper) {
+    public BookController(BookServiceImpl bookService, BookMapper bookMapper) {
 
 		this.bookService = bookService;
 		this.bookMapper = bookMapper;
-		this.objectMapper = objectMapper;
 	}
 
-	/**
-	 * Create a new book
-	 *
-	 * @param request
-	 * @return BookResponse
-	 */
+
 	@PostMapping
 	@Operation(summary = "Create a new book", description = "Create a new book")
 	@ApiResponses(
@@ -60,6 +49,7 @@ public class BookController {
 					@ApiResponse(responseCode = "400", description = "Invalid input")
 			}
 	)
+    @PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<BookResponse> createBook(@Valid @RequestBody BookRequest request) {
 
 		try {

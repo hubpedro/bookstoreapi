@@ -1,11 +1,14 @@
 package com.hubpedro.bookstoreapi.Services;
 
+import com.hubpedro.bookstoreapi.config.Roles;
 import com.hubpedro.bookstoreapi.dto.UserRequest;
 import com.hubpedro.bookstoreapi.dto.UserResponse;
 import com.hubpedro.bookstoreapi.exceptions.DomainValidateException;
 import com.hubpedro.bookstoreapi.exceptions.UserNotFoundException;
 import com.hubpedro.bookstoreapi.mapper.UserMapper;
+import com.hubpedro.bookstoreapi.model.Role;
 import com.hubpedro.bookstoreapi.model.User;
+import com.hubpedro.bookstoreapi.repository.RoleRepository;
 import com.hubpedro.bookstoreapi.repository.UserRepositoryJPA;
 import com.hubpedro.bookstoreapi.security.JwtUtil;
 import com.hubpedro.bookstoreapi.service.impl.UserService;
@@ -44,6 +47,9 @@ public class UserServiceTest {
 	private UserMapper userMapper;
 
 	@Mock
+	private RoleRepository roleRepository;
+
+	@Mock
 	private JwtUtil jwtUtil;
 
 	@InjectMocks
@@ -53,28 +59,25 @@ public class UserServiceTest {
 	void createUser_ShouldBeSuccessful() throws Exception {
 
 		final String expectedName = "Pedro Barbosa";
-		final String expectedEmail = "test.user@example.com";
+		final String expectedEmail = "testuser@gmail.com";
 		final String expectedPassword = "SecurePass123!";
 		final String hashedPassword = "hashedPass123";
 		final Long expectedId = 1L;
 
 		UserRequest validRequest = new UserRequest(expectedName, expectedEmail, expectedPassword);
-		User mockUser = mock(User.class);
+		User user = User.create(expectedName, expectedEmail, expectedPassword);
 
-		when(userMapper.toUser(validRequest)).thenReturn(mockUser);
+		when(userMapper.toUser(validRequest)).thenReturn(user);
 		lenient().when(passwordEncoder.encode("SecurePass123!")).thenReturn("hashedPassword");
-		when(userRepository.save(mockUser)).thenReturn(mockUser);
+		when(userRepository.save(user)).thenReturn(user);
+		when(roleRepository.findByName(Roles.USER)).thenReturn(Optional.of(new Role(Roles.USER)));
 
 		// Act
-		final User result = userService.createUser(validRequest);
+		User result = userService.createUser(validRequest);
 
-		// Assert
 		assertNotNull(result, "User should not be null");
-		// You're asserting against the result object, not the mockUser
-		// If you need to verify the mockUser's state was used, you might need to adjust your approach
-
 		verify(userMapper).toUser(validRequest);
-		verify(userRepository).save(mockUser);
+		verify(userRepository).save(user);
 	}
 
 	@Test
