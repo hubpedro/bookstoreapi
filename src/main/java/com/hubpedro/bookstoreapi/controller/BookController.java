@@ -50,7 +50,7 @@ public class BookController {
 			}
 	)
     @PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<BookResponse> createBook(@Valid @RequestBody BookRequest request) {
+    public ResponseEntity<BookResponse> bookCreation(@Valid @RequestBody BookRequest request) {
 
 		try {
 			log.debug("REST request to save Book : {}", request);

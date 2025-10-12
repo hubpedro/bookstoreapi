@@ -31,7 +31,7 @@ public class LoanService {
 
 	@Transactional
 	public LoanResponse createLoan(Long userId, Long bookId) {
-		User user = userService.getUserById(userId);
+		User user = userService.userById(userId);
 		Book book = bookService.findById(bookId);
 
 		Loan loan = loanRepository.save(Loan.builder()

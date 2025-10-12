@@ -25,13 +25,6 @@ public class UserController {
 		this.userMapper  = userMapper;
 	}
 
-//    @PostMapping("/register")
-//	public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest userDTO) throws Exception {
-//
-//		User createdUser = this.userService.createUser(userDTO);
-//        return new ResponseEntity<>(userMapper.toResponse(createdUser), HttpStatus.CREATED);
-//    }
-
 	@GetMapping
 	public ResponseEntity<Page<User>> getPaginatedUsers(
 			@RequestParam(defaultValue = "") String author,
@@ -39,14 +32,14 @@ public class UserController {
 			@RequestParam(defaultValue = "5") int size
 
 	) {
-		Page<User> users = this.userService.listPaginated(author, page, size);
+        Page<User> users = this.userService.UserListPaginated(author, page, size);
 		return ResponseEntity.accepted().body(users);
 	}
 
 	@GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
-		User         user         = this.userService.getUserById(id);
+        User user = this.userService.userById(id);
 		UserResponse userResponse = this.userMapper.toResponse(user);
 		if (user != null) {
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body(userResponse);
@@ -59,19 +52,19 @@ public class UserController {
 	@DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-		this.userService.deleteUser(id);
+        this.userService.userDelete(id);
 		return ResponseEntity.noContent().build();
 	}
 
 	@PutMapping("/{id}")
 	public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @Valid @RequestBody UserRequest userRequest) {
-		UserResponse updatedUser = this.userService.updateUser(id, userRequest);
+        UserResponse updatedUser = this.userService.userUpdated(id, userRequest);
 		return ResponseEntity.ok(updatedUser);
 	}
 
 	@PatchMapping("/{id}")
 	public ResponseEntity<UserResponse> patchUser(@PathVariable Long id, @RequestBody UserRequest userRequest) {
-		UserResponse patchedUser = this.userService.patchUser(id, userRequest);
+        UserResponse patchedUser = this.userService.userPatch(id, userRequest);
 		return ResponseEntity.ok(patchedUser);
 	}
 }

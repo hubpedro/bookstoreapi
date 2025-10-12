@@ -21,18 +21,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -56,7 +47,7 @@ public class UserServiceTest {
 	private UserService userService;
 
 	@Test
-	void createUser_ShouldBeSuccessful() throws Exception {
+	void user_Create_ShouldBeSuccessful() throws Exception {
 
 		final String expectedName = "Pedro Barbosa";
 		final String expectedEmail = "testuser@gmail.com";
@@ -73,7 +64,7 @@ public class UserServiceTest {
 		when(roleRepository.findByName(Roles.USER)).thenReturn(Optional.of(new Role(Roles.USER)));
 
 		// Act
-		User result = userService.createUser(validRequest);
+		User result = userService.UserCreate(validRequest);
 
 		assertNotNull(result, "User should not be null");
 		verify(userMapper).toUser(validRequest);
@@ -81,7 +72,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	void createUser_WhenNamelIsInvalid_ShouldThrowException() {
+	void user_Create_WhenNamelIsInvalid_ShouldThrowException() {
 		// Act & Assert
 		assertThrows(DomainValidateException.class, () -> {
 			User.create("", "rafael@gmail.com", "123455678");
@@ -90,7 +81,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	void createUser_WhenEmailIsInvalid_ShouldThrowException() {
+	void user_Create_WhenEmailIsInvalid_ShouldThrowException() {
 		// Act & Assert
 		assertThrows(DomainValidateException.class, () -> {
 			User.create("rafael boladao", "", "123455678");
@@ -99,7 +90,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	void createUser_WhenPasswordIsInvalid_ShouldThrowException() {
+	void user_Create_WhenPasswordIsInvalid_ShouldThrowException() {
 		// Act & Assert
 		assertThrows(DomainValidateException.class, () -> {
 			User.create("rafael boladao", "rafael@gmail.com", "");
@@ -108,7 +99,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	void getUserById_WhenUserExists_ShouldReturnUser() {
+	void user() {
 		// Arrange
 		final Long expectedId = 1L;
 		User expectedUser = mock(User.class);
@@ -116,7 +107,7 @@ public class UserServiceTest {
 		when(userRepository.findById(expectedId)).thenReturn(Optional.of(expectedUser));
 
 		// Act
-		final User result = userService.getUserById(expectedId);
+		final User result = userService.userById(expectedId);
 
 		// Assert
 		assertNotNull(result);
@@ -126,27 +117,27 @@ public class UserServiceTest {
 	}
 
 	@Test
-	void getUserById_WhenUserNotExists_ShouldThrowException() {
+	void userNotExists_ShouldThrowException() {
 		// Arrange
 		final Long nonExistentId = 999L;
 		when(userRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
 		// Act & Assert
 		assertThrows(UserNotFoundException.class, () -> {
-			userService.getUserById(nonExistentId);
+			userService.userById(nonExistentId);
 		});
 
 		verify(userRepository).findById(nonExistentId);
 	}
 
 	@Test
-	void deleteUserById_WhenUserExists_ShouldDeleteUser() {
+	void deleteUserById_WhenUserExists_ShouldUserDelete() {
 
 		Long expectedId = 1L;
 
 		doNothing().when(userRepository).deleteById(expectedId);
 
-		userService.deleteUser(expectedId);
+		userService.userDelete(expectedId);
 
 		verify(userRepository, times(1)).deleteById(expectedId);
 	}
@@ -187,7 +178,7 @@ public class UserServiceTest {
 		when(userMapper.toResponse(existingUser)).thenReturn(expectedResponse);
 
 		// Act
-		UserResponse result = userService.updateUser(id, userRequest);
+		UserResponse result = userService.userUpdated(id, userRequest);
 
 		// Assert - Verifica o response
 		assertNotNull(result);
@@ -212,7 +203,7 @@ public class UserServiceTest {
 
 		// Act & Assert
 		assertThrows(IllegalArgumentException.class, () -> {
-			userService.updateUser(nonExistentId, userRequest);
+			userService.userUpdated(nonExistentId, userRequest);
 		});
 
 		// Verify - Garante que não tentou salvar

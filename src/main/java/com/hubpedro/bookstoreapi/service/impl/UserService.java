@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
-import java.util.List;
 
 @Service
 public class UserService {
@@ -46,13 +45,13 @@ public class UserService {
 		this.roleRepository = roleRepository;
 	}
 
-	public Page<User> listPaginated(String name, int page, int size) {
+    public Page<User> UserListPaginated(String name, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 		return userRepository.findByName(name, pageable);
 	}
 
 	@Transactional(rollbackFor = {DomainValidateException.class, UsernameAlreadyExistsException.class})
-	public User createUser(UserRequest userRequest) throws DomainValidateException {
+    public User UserCreate(UserRequest userRequest) throws DomainValidateException {
 		User user = userMapper.toUser(userRequest);
 
 
@@ -72,22 +71,17 @@ public class UserService {
 		return userRepository.save(user);
 	}
 
-	public List<UserResponse> getAllUsers() {
-
-		return userRepository.findAll().stream().map(userMapper::toResponse).toList();
-	}
-
-	public User getUserById(Long id) {
+    public User userById(Long id) {
 
 		return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("user with this id was not found"));
 	}
 
-	public void deleteUser(Long id) {
+    public void userDelete(Long id) {
 
 		userRepository.deleteById(id);
 	}
 
-	public UserResponse updateUser(Long id, UserRequest userRequest) {
+    public UserResponse userUpdated(Long id, UserRequest userRequest) {
 
 		User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
 		user.updateFrom(userMapper.toUser(userRequest));
@@ -95,7 +89,7 @@ public class UserService {
 		return userMapper.toResponse(updatedUser);
 	}
 
-	public UserResponse patchUser(Long id, UserRequest userRequest) {
+    public UserResponse userPatch(Long id, UserRequest userRequest) {
 
 		User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
 		if (userRequest.getName() != null) {
