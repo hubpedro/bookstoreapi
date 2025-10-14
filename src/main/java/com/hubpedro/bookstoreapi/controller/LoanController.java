@@ -31,9 +31,7 @@ public class LoanController {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size) throws RuntimeException
 	{
-
 		Pageable pageable = PageRequest.of(page, size, Sort.by("id")); // Ordenação explícita
-
 		Page<LoanResponse> loanPage = loanService.findAllPaginated(pageable);
 		return ResponseEntity.ok(loanPage);
 		}
