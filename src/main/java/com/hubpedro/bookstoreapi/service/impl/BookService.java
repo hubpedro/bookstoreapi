@@ -1,8 +1,8 @@
 package com.hubpedro.bookstoreapi.service.impl;
 
 import com.hubpedro.bookstoreapi.dto.BookRequest;
+import com.hubpedro.bookstoreapi.dto.BookResponse;
 import com.hubpedro.bookstoreapi.exceptions.DomainException;
-import com.hubpedro.bookstoreapi.exceptions.DomainValidateException;
 import com.hubpedro.bookstoreapi.mapper.BookMapper;
 import com.hubpedro.bookstoreapi.model.Book;
 import com.hubpedro.bookstoreapi.repository.BookRepository;
@@ -14,70 +14,67 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
-public class IBookServiceImpl implements IBookService {
+public
+class BookService implements IBookService {
 
-    private final Logger logger = LoggerFactory.getLogger(IBookServiceImpl.class);
+	private final Logger logger = LoggerFactory.getLogger(BookService.class);
 
 	private final BookRepository bookRepository;
 	private final BookMapper     bookMapper;
 
-    public IBookServiceImpl(BookRepository bookRepository, BookMapper bookMapper) {
+	public
+	BookService(BookRepository bookRepository, BookMapper bookMapper) {
 		this.bookRepository = bookRepository;
 		this.bookMapper     = bookMapper;
 	}
 
 	@Override
-    @Transactional(rollbackFor = {DomainValidateException.class, DomainValidateException.class, DomainException.class})
-    public Book create(BookRequest request) throws DomainException, IllegalArgumentException {
+    @Transactional(rollbackFor = {DomainException.class})
+    public Book create(BookRequest request) throws DomainException {
 
-        try {
-            Book bookRequested = this.bookMapper.toData(request);
+        Book bookRequested = this.bookMapper.toData(request);
 
-            if (null == bookRequested) {
-                throw new DomainException("BookRequest is invalid.");
-            }
-
-            if (this.bookRepository.existsByTitle(bookRequested.getTitle())) {
-                throw new DomainException("Book with this title already exists");
-            }
-
-
-            Book newBok = this.bookRepository.save(bookRequested);
-
-            this.logger.info("BookServiceImpl.create[ book= {}", newBok);
-
-            return newBok;
-        } catch (DomainValidateException e) {
-            throw new IllegalArgumentException("BookRequest is invalid.", e);
+        if (null == bookRequested) {
+            throw new DomainException("BookRequest is invalid.");
         }
+
+        if(this.bookRepository.findByTitle(bookRequested.getTitle())) {
+            throw new DomainException("Book with this title already exists");
+        }
+
+
+        Book newBok = this.bookRepository.save(bookRequested);
+
+        this.logger.info("BookServiceImpl.create[ book= {}", newBok);
+
+        return newBok;
 	}
 
 	@Override
 	@Transactional
 	public Book update(Long id, Book book) {
 
-		return this.getBook(id,book,"BookServiceImpl.update[ book= {}");
+		return this.updateOrPatch(id,book,"BookServiceImpl.update[ book= {}");
 	}
 
-	@NotNull private Book getBook (Long id,Book book,String s) {
+	@NotNull
+    private Book updateOrPatch(Long id, Book book, String logMessage) {
+        Book bookToUpdate = this.bookRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
 
-		Optional<Book> id1        = this.bookRepository.findById(id);
-		Book           bookUpdate = id1.orElseThrow(() -> new IllegalArgumentException("Book not " + "found"));
+        bookToUpdate.updateFrom(book);
+        this.logger.info(logMessage, bookToUpdate);
 
-		bookUpdate.updateFrom(book);
-		this.logger.info(s,bookUpdate);
-
-		return this.bookRepository.save(book);
-	}
+        return this.bookRepository.save(bookToUpdate);
+    }
 
 	@Override
 	@Transactional
 	public Book patch(Long id, Book book) {
 
-		return this.getBook(id,book,"BookServiceImpl.patch[ book={%s}]{}");
+		return this.updateOrPatch(id,book,"BookServiceImpl.patch[ book={}]");
 
 	}
 
@@ -90,16 +87,15 @@ public class IBookServiceImpl implements IBookService {
 	@Transactional
 	public void delete(Long id) {
 
-		Optional<Book> id1  = this.bookRepository.findById(id);
-		Book           book = id1.orElseThrow(() -> new IllegalArgumentException("Book not found with id: " + id));
+		Book book = this.bookRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Book not found with id: " + id));
 		this.bookRepository.delete(book);
 		this.logger.info("Deleting book with an id: {}",id);
 	}
 
-	public Book findById(Long id) {
-
-		Optional<Book> id1 = this.bookRepository.findById(id);
-		return id1.orElseThrow(() -> new IllegalArgumentException("id not found"));
+	public
+	BookResponse findById(Long id) {
+		Book book = this.bookRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("id not found"));
+		return this.bookMapper.toResponse(book);
 	}
 
 }

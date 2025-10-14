@@ -4,7 +4,7 @@ import com.hubpedro.bookstoreapi.dto.BookRequest;
 import com.hubpedro.bookstoreapi.mapper.BookMapper;
 import com.hubpedro.bookstoreapi.model.Book;
 import com.hubpedro.bookstoreapi.repository.BookRepository;
-import com.hubpedro.bookstoreapi.service.impl.IBookServiceImpl;
+import com.hubpedro.bookstoreapi.service.impl.BookService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,14 +20,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class IBookServiceImplTest {
+class BookServiceTest {
 
 	@Mock private BookRepository bookRepository;
 
 	@Mock private BookMapper bookMapper;
 
 	@InjectMocks
-	private IBookServiceImpl bookService;
+	private BookService bookService;
 
 	@Test
 	void findBookId_WhenAnyId_ShouldPass() {

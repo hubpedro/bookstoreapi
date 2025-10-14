@@ -6,7 +6,7 @@ import com.hubpedro.bookstoreapi.mapper.BookMapper;
 import com.hubpedro.bookstoreapi.model.Book;
 import com.hubpedro.bookstoreapi.repository.BookRepository;
 import com.hubpedro.bookstoreapi.security.JwtAuthenticationFilter;
-import com.hubpedro.bookstoreapi.service.impl.BookServiceImpl;
+import com.hubpedro.bookstoreapi.service.impl.BookService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
@@ -43,7 +43,7 @@ class BookControllerTest {
 	private MockMvc mockMvc;
 
 	@MockitoBean
-	private BookServiceImpl bookService;
+	private BookService bookService;
 
 	@MockitoBean
 	private BookMapper bookMapper;

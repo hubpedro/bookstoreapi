@@ -1,5 +1,6 @@
 package com.hubpedro.bookstoreapi.model;
 
+import com.hubpedro.bookstoreapi.exceptions.BookNotAvailableException;
 import com.hubpedro.bookstoreapi.exceptions.DomainValidateException;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,7 +10,6 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import jdk.jfr.BooleanFlag;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -49,16 +49,16 @@ public class Book {
 
 	private BigDecimal price;
 
-	@NumberFormat(style = NumberFormat.Style.NUMBER) private int stock;
+	@NumberFormat(style = NumberFormat.Style.NUMBER)
+	private int stock;
 
-	@BooleanFlag private boolean available;
+	private boolean available;
 
 	public Book() {
 
 	}
 
 	private Book(String title, String author, String description, BigDecimal price, int stock) {
-
 		this.title       = title;
 		this.author      = author;
 		this.description = description;
@@ -146,6 +146,16 @@ public class Book {
 		author      = validateAuthor(book.author);
 		price       = validatePrice(book.price);
 		stock       = validateStock(book.stock);
+		available = this.stock >= 1;
+	}
+
+	public
+	void processLoan() {
+		if(this.stock < 1) {
+			throw new BookNotAvailableException("Book not available");
+		}
+		this.stock--;
+		this.available = this.stock >= 1;
 	}
 
 }

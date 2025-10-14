@@ -6,7 +6,7 @@ import com.hubpedro.bookstoreapi.dto.BookResponse;
 import com.hubpedro.bookstoreapi.exceptions.DomainValidateException;
 import com.hubpedro.bookstoreapi.mapper.BookMapper;
 import com.hubpedro.bookstoreapi.model.Book;
-import com.hubpedro.bookstoreapi.service.impl.BookServiceImpl;
+import com.hubpedro.bookstoreapi.service.impl.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -20,21 +20,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controller for managing books.
- */
 @RequestMapping(ProtectedEndPoints.BOOKS)
 @RestController
 public class BookController {
 
 	private final Logger log = LoggerFactory.getLogger(BookController.class);
-
-	private final BookServiceImpl bookService;
-
+    private final BookService bookService;
 	private final BookMapper bookMapper;
 
 
-    public BookController(BookServiceImpl bookService, BookMapper bookMapper) {
+    public BookController(BookService bookService, BookMapper bookMapper) {
 
 		this.bookService = bookService;
 		this.bookMapper = bookMapper;

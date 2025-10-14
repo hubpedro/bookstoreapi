@@ -2,11 +2,13 @@ package com.hubpedro.bookstoreapi.service;
 
 
 import com.hubpedro.bookstoreapi.dto.BookRequest;
+import com.hubpedro.bookstoreapi.dto.BookResponse;
 import com.hubpedro.bookstoreapi.model.Book;
 
 import java.util.List;
 
-public interface BookService {
+public
+interface IBookService {
     Book create(BookRequest book);
 
 	Book update(Long id,
@@ -20,6 +22,6 @@ public interface BookService {
 	void delete(Long id);
 
 
-	Book findById(Long id);
+	BookResponse findById(Long id);
 
 }
