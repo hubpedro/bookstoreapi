@@ -12,10 +12,9 @@ import com.hubpedro.bookstoreapi.model.User;
 import com.hubpedro.bookstoreapi.repository.RoleRepository;
 import com.hubpedro.bookstoreapi.repository.UserRepositoryJPA;
 import com.hubpedro.bookstoreapi.security.JwtUtil;
+import com.hubpedro.bookstoreapi.service.IUserService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 
 @Service
-public class UserService {
+public class UserService implements IUserService {
 
 	private final UserMapper        userMapper;
 
@@ -31,30 +30,25 @@ public class UserService {
 
 	private final PasswordEncoder passwordEncoder;
 
-	private final JwtUtil jwtUtil;
 
 	private final RoleRepository roleRepository;
 
 	public UserService(RoleRepository roleRepository, UserMapper userMapper, UserRepositoryJPA userRepository,
 	                   PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
-
 		this.userRepository = userRepository;
 		this.userMapper     = userMapper;
 		this.passwordEncoder = passwordEncoder;
-		this.jwtUtil = jwtUtil;
 		this.roleRepository = roleRepository;
 	}
 
-    public Page<User> UserListPaginated(String name, int page, int size) {
-		Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-		return userRepository.findByName(name, pageable);
+    public Page<UserResponse> listPaginatedUser(Pageable pageable) {
+        Page<User> usersPage = userRepository.findAll(pageable);
+        return usersPage.map(userMapper::toResponse);
 	}
 
 	@Transactional(rollbackFor = {DomainValidateException.class, UsernameAlreadyExistsException.class})
-    public User UserCreate(UserRequest userRequest) throws DomainValidateException {
+    public UserResponse createUser(UserRequest userRequest) throws DomainValidateException {
 		User user = userMapper.toUser(userRequest);
-
-
 		boolean nameAlreadyExists = userRepository.findByName(user.getName()).isPresent();
 		boolean emailAlreadyExists = userRepository.findByEmail(user.getEmail()).isPresent();
 
@@ -68,12 +62,16 @@ public class UserService {
 
 		user.setPassword(passwordEncoder.encode((user.getPassword())));
 		user.setRoles(Collections.singleton(userRole));
-		return userRepository.save(user);
+        User newUser = userRepository.save(user);
+
+        return userMapper.toResponse(newUser);
 	}
 
-    public User userById(Long id) {
+    public UserResponse findUserById(Long id) {
 
-		return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("user with this id was not found"));
+        User user = userRepository.findById(id)
+                                  .orElseThrow(() -> new UserNotFoundException("user with this id was not found"));
+        return userMapper.toResponse(user);
 	}
 
     public void userDelete(Long id) {

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -47,9 +48,16 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@Valid @RequestBody UserRequest userDTO) throws Exception {
-        User createdUser = this.userService.UserCreate(userDTO);
-        return new ResponseEntity<>(userMapper.toResponse(createdUser), HttpStatus.CREATED);
+    public ResponseEntity<UserResponse> registerUser(@RequestBody @Valid UserRequest request) {
+        UserResponse newUser = userService.createUser(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                             .header("Location", "/api/users/" + newUser.getId())
+                             .header("X-Request-ID", UUID.randomUUID().toString())
+                             .header("X-API-Version", "1.0")
+                             // 🎯 O único easter egg permitido:
+                             .header("X-API-Mood", "ProfessionalButFriendly")
+                             .body(newUser);
     }
 
     @PostMapping("/login")

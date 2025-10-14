@@ -7,16 +7,13 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity(name = "users")
 @Getter
@@ -57,7 +54,6 @@ public class User implements UserDetails {
 	private Set<Role> roles = new HashSet<>();
 
 	private User(String name, String email, String password) throws DomainValidateException {
-
 		this.name     = validateAndSetName(name);
 		this.email    = validateAndSetEmail(email);
 		this.password = validateAndSetPassword(password);
@@ -75,7 +71,8 @@ public class User implements UserDetails {
 		throw new DomainValidateException("Invalid email");
 	}
 
-	private static String validateAndSetPassword(String password) throws DomainValidateException {
+    @Contract("null -> fail")
+    private static @NotNull String validateAndSetPassword(String password) throws DomainValidateException {
 
 		if (password != null && password.length() >= 8 && password.length() <= 255) {
 			return password;

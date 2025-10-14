@@ -4,10 +4,11 @@ import com.hubpedro.bookstoreapi.config.ProtectedEndPoints;
 import com.hubpedro.bookstoreapi.dto.UserRequest;
 import com.hubpedro.bookstoreapi.dto.UserResponse;
 import com.hubpedro.bookstoreapi.mapper.UserMapper;
-import com.hubpedro.bookstoreapi.model.User;
 import com.hubpedro.bookstoreapi.service.impl.UserService;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,22 +27,21 @@ public class UserController {
 	}
 
 	@GetMapping
-	public ResponseEntity<Page<User>> getPaginatedUsers(
-			@RequestParam(defaultValue = "") String author,
+    public ResponseEntity<Pageable> getPaginatedUsers(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "5") int size
+            @RequestParam(defaultValue = "0") int size,
+            @RequestParam(defaultValue = "id") String sort
 
 	) {
-        Page<User> users = this.userService.UserListPaginated(author, page, size);
-		return ResponseEntity.accepted().body(users);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
+        return ResponseEntity.status(HttpStatus.OK).body(pageable);
 	}
 
 	@GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
-        User user = this.userService.userById(id);
-		UserResponse userResponse = this.userMapper.toResponse(user);
-		if (user != null) {
+        UserResponse userResponse = this.userService.findUserById(id);
+        if (userResponse != null) {
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body(userResponse);
 		}
 		else {
@@ -57,6 +57,7 @@ public class UserController {
 	}
 
 	@PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @Valid @RequestBody UserRequest userRequest) {
         UserResponse updatedUser = this.userService.userUpdated(id, userRequest);
 		return ResponseEntity.ok(updatedUser);

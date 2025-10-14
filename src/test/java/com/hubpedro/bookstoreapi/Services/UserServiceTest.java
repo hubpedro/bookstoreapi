@@ -64,7 +64,7 @@ public class UserServiceTest {
 		when(roleRepository.findByName(Roles.USER)).thenReturn(Optional.of(new Role(Roles.USER)));
 
 		// Act
-		User result = userService.UserCreate(validRequest);
+		User result = userService.createUser(validRequest);
 
 		assertNotNull(result, "User should not be null");
 		verify(userMapper).toUser(validRequest);
@@ -107,7 +107,7 @@ public class UserServiceTest {
 		when(userRepository.findById(expectedId)).thenReturn(Optional.of(expectedUser));
 
 		// Act
-		final User result = userService.userById(expectedId);
+		final User result = userService.findUserById(expectedId);
 
 		// Assert
 		assertNotNull(result);
@@ -124,7 +124,7 @@ public class UserServiceTest {
 
 		// Act & Assert
 		assertThrows(UserNotFoundException.class, () -> {
-			userService.userById(nonExistentId);
+			userService.findUserById(nonExistentId);
 		});
 
 		verify(userRepository).findById(nonExistentId);
