@@ -6,7 +6,7 @@ import com.hubpedro.bookstoreapi.exceptions.DomainValidateException;
 import com.hubpedro.bookstoreapi.mapper.BookMapper;
 import com.hubpedro.bookstoreapi.model.Book;
 import com.hubpedro.bookstoreapi.repository.BookRepository;
-import com.hubpedro.bookstoreapi.service.BookService;
+import com.hubpedro.bookstoreapi.service.IBookService;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,14 +17,14 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class BookServiceImpl implements BookService {
+public class IBookServiceImpl implements IBookService {
 
-	private final Logger logger = LoggerFactory.getLogger(BookServiceImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(IBookServiceImpl.class);
 
 	private final BookRepository bookRepository;
 	private final BookMapper     bookMapper;
 
-	public BookServiceImpl(BookRepository bookRepository, BookMapper bookMapper) {
+    public IBookServiceImpl(BookRepository bookRepository, BookMapper bookMapper) {
 		this.bookRepository = bookRepository;
 		this.bookMapper     = bookMapper;
 	}

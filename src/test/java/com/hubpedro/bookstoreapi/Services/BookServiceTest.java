@@ -4,7 +4,7 @@ import com.hubpedro.bookstoreapi.dto.BookRequest;
 import com.hubpedro.bookstoreapi.mapper.BookMapper;
 import com.hubpedro.bookstoreapi.model.Book;
 import com.hubpedro.bookstoreapi.repository.BookRepository;
-import com.hubpedro.bookstoreapi.service.impl.BookServiceImpl;
+import com.hubpedro.bookstoreapi.service.impl.IBookServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,25 +16,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class BookServiceImplTest {
+class IBookServiceImplTest {
 
 	@Mock private BookRepository bookRepository;
 
 	@Mock private BookMapper bookMapper;
 
-	@InjectMocks private BookServiceImpl bookService;
+	@InjectMocks
+	private IBookServiceImpl bookService;
 
 	@Test
 	void findBookId_WhenAnyId_ShouldPass() {
