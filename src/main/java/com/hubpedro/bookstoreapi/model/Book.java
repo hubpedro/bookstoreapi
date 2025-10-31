@@ -2,18 +2,12 @@ package com.hubpedro.bookstoreapi.model;
 
 import com.hubpedro.bookstoreapi.exceptions.BookNotAvailableException;
 import com.hubpedro.bookstoreapi.exceptions.DomainValidateException;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.format.annotation.NumberFormat;
 
@@ -23,6 +17,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Represents a Book entity in the bookstore.
+ */
 @Slf4j
 @Entity(name = "book")
 @Getter
@@ -33,18 +30,22 @@ public class Book {
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	private Long id;
 
-	@OneToMany(mappedBy = "book") private List<Loan> loans = new ArrayList<>();
+    @OneToMany(mappedBy = "book")
+    private List<Loan> loans = new ArrayList<>();
 
-	@ManyToMany(mappedBy = "books") private Set<User> users = new HashSet<>();
+    @ManyToMany(mappedBy = "books")
+    private Set<User> users = new HashSet<>();
 
-	@Size(min = 5, max = 255)
 	@NotBlank
+    @Size(min = 6, max = 255)
 	private String title;
 
-	@Size(max = 255) private String description;
+    @NotBlank
+    @Size(min = 11, max = 255)
+    private String description;
 
 	@NotBlank
-	@Size(min = 10, max = 255)
+    @Size(min = 6, max = 255)
 	private String author;
 
 	private BigDecimal price;
@@ -67,95 +68,101 @@ public class Book {
 		this.available   = stock >= 1;
 	}
 
-	/**
-	 * Create a new book.
-	 *
-	 * @param title
-	 * 		The title of the book. Must be between 5 and 50 characters.
-	 * @param author
-	 * 		The author of the book. Must be between 10 and 255 characters.
-	 * @param description
-	 * 		The description of the book. Must be between 10 and 255 characters.
-	 * @param price
-	 * 		The price of the book. Must be greater than 0.
-	 * @param stock
-	 * 		The stock of the book. Must be greater than 0.
-	 *
-	 * @return The created book. If validates correctly.
-	 */
-	@Contract("_, _, _, _, _ -> new")
+
 	public static @NotNull Book create(String title, String author, String description, BigDecimal price, int stock) {
 
-		Book newBook = new Book(validateTitle(title), validateAuthor(author), validateDescription(description), validatePrice(price), validateStock(stock));
-		return newBook;
+        return new Book(validateTitle(title), validateAuthor(author), validateDescription(description), validatePrice(price), validateStock(stock));
 	}
 
-	@Contract("null -> fail")
 	public static String validateTitle(String title) {
-
-		if (null != title && (title.length() > 5 && title.length() <= 255)) {
+        if (title != null && !title.isBlank() && (title.length() > 5 && title.length() <= 255)) {
 			return title;
 		}
 		throw new DomainValidateException("Invalid title");
-	}
+    }
 
-	@Contract("null -> fail")
-	public static String validateAuthor(String author) {
+    public static String validateAuthor(String author) {
 
-        if (null != author && !author.isBlank() && author.length() > 5 && author.length() <= 255) {
+        if (null != author && !author.isBlank() && author.length() > 5 && author.length() <= 255) { // Mantendo a regra original de > 5
 			return author;
 		}
 		throw new DomainValidateException("Invalid author");
 
-	}
+    }
 
-	@Contract("null -> fail")
-	private static String validateDescription(String description) {
+    public static String validateDescription(String description) {
 
 		if (null != description && !description.isBlank() && description.length() > 10 && description.length() <= 255) {
 			return description;
 		}
 		throw new DomainValidateException("Invalid description");
-	}
+    }
 
 	public static BigDecimal validatePrice(BigDecimal price) throws DomainValidateException {
 
-		if (price == null) {
-			throw new DomainValidateException("Price cannot be null");
+        if (price == null || price.compareTo(BigDecimal.ZERO) == 0) {
+            throw new DomainValidateException("Price cannot be null, zero or negative");
 		}
-		if (price.compareTo(BigDecimal.ZERO) > 0) {
 			return price;
-		}
-		throw new DomainValidateException("Price cannot be zero or negative");
-	}
+    }
 
-	@Contract("_ -> param1")
+    /**
+     * Validates the book stock quantity.
+     *
+     * @param stock The stock quantity to validate.
+     * @return The validated stock quantity.
+     * @throws DomainValidateException if the stock is less than 1.
+     */
 	public static int validateStock(int stock) {
-
 		if (stock >= 1) {
 			return stock;
 		}
-		
 		throw new DomainValidateException("stock cannot be less than 0");
-	}
+    }
 
+    /**
+     * Updates the current book's properties from another book object,
+     * applying validation to each property.
+     *
+     * @param book The book object containing the new values.
+     */
 	public void updateFrom(@NotNull Book book) {
 
-		title       = validateTitle(book.title);
-		description = validateDescription(book.description);
-		author      = validateAuthor(book.author);
-		price       = validatePrice(book.price);
-		stock       = validateStock(book.stock);
+        title = validateTitle(book.getTitle());
+        description = validateDescription(book.getDescription());
+        author = validateAuthor(book.getAuthor());
+        price = validatePrice(book.getPrice());
+        stock = validateStock(book.getStock());
 		available = this.stock >= 1;
-	}
+    }
 
-	public
-	void processLoan() {
+    /**
+     * Processes a loan for this book by decrementing the stock.
+     * Updates the availability status based on the new stock count.
+     *
+     * @throws BookNotAvailableException if the book is out of stock.
+     */
+    public void processLoan() {
 		if(this.stock < 1) {
 			throw new BookNotAvailableException("Book not available");
 		}
 		this.stock--;
 		this.available = this.stock >= 1;
-	}
+    }
 
+    /**
+     * Processes a return for this book by incrementing the stock.
+     * Sets the book as available.
+     */
+    public void processReturn() {
+        this.stock++;
+        this.available = true;
+        log.info("Livro ID {} teve estoque atualizado para {}", this.id, this.stock);
+    }
+
+    public void ensureStockIsAvailable() {
+        if (this.stock < 1) {
+            throw new BookNotAvailableException("Book is out of stock");
+        }
+    }
 }
