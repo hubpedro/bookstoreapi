@@ -19,6 +19,67 @@ implementando boas práticas de arquitetura, segurança, testes e containerizaç
 * **Validação de Dados:** Tratamento de erros e validação de entrada (DTOs).
 * **Documentação de API:** API documentada com Swagger (OpenAPI).
 
+## Endpoints da API
+
+### Empréstimos
+
+#### Criar um Empréstimo
+
+*   **POST** `/api/loans`
+
+    Cria um novo empréstimo para um usuário e um livro.
+
+    **Request Body:**
+
+    ```json
+    {
+      "userId": 1,
+      "bookId": 1
+    }
+    ```
+
+    **Response:** `201 Created` com o objeto do empréstimo criado no corpo da resposta e o `Location` header com a URL para o novo recurso.
+
+    ```json
+    {
+        "userId": 1,
+        "id": 1,
+        "bookId": 1,
+        "createdAt": "2025-10-30",
+        "lastModifiedAt": "2025-10-30",
+        "loanedAt": "2025-10-30",
+        "dueOn": "2025-11-13",
+        "returnedAt": null,
+        "status": "ACTIVE",
+        "loanDebt": null
+    }
+    ```
+
+#### Devolver um Livro
+
+*   **PATCH** `/api/loans/{id}/return`
+
+    Registra a devolução de um livro. Se o livro for devolvido após a data de vencimento, uma multa será calculada e adicionada ao campo `loanDebt`.
+
+    **Response:** `200 OK` com o objeto do empréstimo atualizado.
+
+    ```json
+    {
+        "userId": 1,
+        "id": 1,
+        "bookId": 1,
+        "createdAt": "2025-10-30",
+        "lastModifiedAt": "2025-10-31",
+        "loanedAt": "2025-10-30",
+        "dueOn": "2025-11-13",
+        "returnedAt": "2025-10-31",
+        "status": "RETURNED",
+        "loanDebt": 0.00
+    }
+    ```
+
+    Em caso de tentativa de devolução de um livro já devolvido, a API retornará `409 Conflict`.
+
 ## Tech Stack (Tecnologias Utilizadas)
 
 * **Backend:**
