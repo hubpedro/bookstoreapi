@@ -1,0 +1,99 @@
+###
+# ================== Book Endpoints ==================
+
+# @name createBook
+# Create a new book
+POST http://localhost:8080/api/books
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "The Hitchhiker's Guide to the Galaxy",
+  "author": "Douglas Adams",
+  "description": "A science fiction comedy series.",
+  "price": 12.50,
+  "stock": 42
+}
+
+###
+
+# @name getBooks
+# List all books
+GET http://localhost:8080/api/books
+Authorization: Bearer {{token}}
+
+###
+# ================== Loan Endpoints ==================
+
+# @name createLoan
+# Create a new loan
+POST http://localhost:8080/api/loans/book/1/user/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "userId": 1,
+  "bookId": 1
+}
+
+###
+
+# @name getLoans
+# List all loans
+GET http://localhost:8080/api/loans
+Authorization: Bearer {{token}}
+
+###
+
+# @name returnLoan
+# Return a book for a loan
+PATCH http://localhost:8080/api/loans/1/return
+Authorization: Bearer {{token}}
+
+###
+# ================== User Endpoints ==================
+
+# @name getUsers
+# Get paginated users
+GET http://localhost:8080/api/users
+Authorization: Bearer {{token}}
+
+###
+
+# @name getUserById
+# Get user by ID
+GET http://localhost:8080/api/users/1
+Authorization: Bearer {{token}}
+
+###
+
+# @name deleteUser
+# Delete a user
+DELETE http://localhost:8080/api/users/1
+Authorization: Bearer {{token}}
+
+###
+
+# @name updateUser
+# Update a user
+PUT http://localhost:8080/api/users/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "New Name",
+  "email": "new.email@example.com",
+  "password": "new_password"
+}
+
+###
+
+# @name patchUser
+# Patch a user
+PATCH http://localhost:8080/api/users/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Patched Name"
+}
