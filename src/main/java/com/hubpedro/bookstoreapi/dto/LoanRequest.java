@@ -1,11 +1,12 @@
 package com.hubpedro.bookstoreapi.dto;
 
-import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDate;
 
 
 @Getter
@@ -14,8 +15,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoanRequest {
-	private Long      user;
-	private Long      book;
+	private Long userId;
+	private Long bookId;
 	private LocalDate created_date;
 	private LocalDate last_modified;
 	private LocalDate loanDate;
