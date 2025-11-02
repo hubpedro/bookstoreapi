@@ -16,16 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public
-class BookService implements IBookService {
+public class BookService implements IBookService {
 
 	private final Logger logger = LoggerFactory.getLogger(BookService.class);
-
 	private final BookRepository bookRepository;
 	private final BookMapper     bookMapper;
 
-	public
-	BookService(BookRepository bookRepository, BookMapper bookMapper) {
+    public BookService(BookRepository bookRepository, BookMapper bookMapper) {
 		this.bookRepository = bookRepository;
 		this.bookMapper     = bookMapper;
 	}
@@ -55,7 +52,6 @@ class BookService implements IBookService {
 	@Override
 	@Transactional
 	public Book update(Long id, Book book) {
-
 		return this.updateOrPatch(id,book,"BookServiceImpl.update[ book= {}");
 	}
 
@@ -92,8 +88,7 @@ class BookService implements IBookService {
 		this.logger.info("Deleting book with an id: {}",id);
 	}
 
-	public
-	BookResponse findById(Long id) {
+    public BookResponse findById(Long id) {
 		Book book = this.bookRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("id not found"));
 		return this.bookMapper.toResponse(book);
 	}
