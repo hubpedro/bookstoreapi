@@ -1,6 +1,4 @@
-# 📚 Bookstore API
-
-> **API RESTful completa** para gerenciamento de livraria com **autenticação JWT**, **sistema de empréstimos** com multas automáticas e **controle granular de permissões**.
+# Bookstore API
 
 [![Java](https://img.shields.io/badge/Java-17-orange?logo=openjdk)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen?logo=spring)](https://spring.io/projects/spring-boot)
@@ -8,92 +6,106 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
----
-
-## 🎯 Sobre o Projeto
-
-Este projeto foi desenvolvido para demonstrar **competências profissionais em desenvolvimento backend Java**, aplicando padrões de arquitetura moderna, segurança robusta e boas práticas de engenharia de software.
-
-**Por que este projeto se destaca:**
-- ✅ Autenticação JWT com sistema de **roles E permissions** granulares (não apenas roles)
-- ✅ Lógica de negócio complexa: **cálculo automático de multas** por atraso
-- ✅ **Controle de estoque** em tempo real (transações atômicas)
-- ✅ Testes de integração E unitários com **cobertura >80%**
-- ✅ **Docker-first**: aplicação containerizada e pronta para deploy
-- ✅ Documentação interativa com **Swagger/OpenAPI**
+RESTful API for bookstore management featuring **JWT authentication**, **granular permission control**, and an **automatic fine calculation engine** for overdue loans.
 
 ---
 
-## 🚀 Demo Rápida
+## Quick Start
 
 ```bash
-# Clone e execute em 2 comandos
 git clone https://github.com/hubpedro/bookstoreapi.git
-cd bookstoreapi && docker-compose up
+cd bookstoreapi && docker-compose up --build
 ```
 
-**Acesse:**
 - API: `http://localhost:8080`
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 
 ---
 
-## 🏗️ Arquitetura & Decisões Técnicas
+## Architecture & Design Decisions
 
-### Stack Tecnológica
+### Why Granular Permissions Instead of Just Roles?
 
-| Camada | Tecnologia | Justificativa |
-|--------|-----------|---------------|
-| **Backend** | Java 17 + Spring Boot 3 | Features modernas (records, pattern matching) e LTS |
-| **Segurança** | Spring Security + JWT | Autenticação stateless e escalável |
-| **Persistência** | Spring Data JPA + PostgreSQL | ORM maduro com banco relacional robusto |
-| **Testes** | JUnit 5 + Mockito + Testcontainers | Pirâmide de testes completa |
-| **Documentação** | Springdoc OpenAPI 3 | Docs interativas geradas automaticamente |
-| **Containerização** | Docker + Docker Compose | Ambiente reproduzível e deployment simplificado |
+Most APIs stop at roles (`ADMIN`, `USER`). This project implements a two-layer authorization model:
 
-### Padrões Implementados
-- **Repository Pattern** para abstração de persistência
-- **DTO Pattern** para contratos de API desacoplados das entidades
-- **Service Layer** para lógica de negócio
-- **Exception Handling Centralizado** com `@ControllerAdvice`
-- **Bean Validation** (JSR 380) em todas as entradas
+- **Roles** define broad access groups
+- **Permissions** define specific operations (e.g., `BOOK_READ`, `LOAN_CREATE`, `LOAN_READ`)
+
+This allows fine-grained control — a user can have `LOAN_READ` without `LOAN_CREATE`, which is closer to real-world enterprise requirements.
+
+### Why Optimistic Locking on Stock?
+
+The stock management uses `@Version` (JPA Optimistic Locking) to handle concurrent loan requests for the last available copy of a book. Without this, two simultaneous requests could both read `stockQty = 1`, decrement it, and result in `-1` — a classic race condition. Optimistic locking detects the conflict and fails fast, letting the application retry or reject gracefully.
+
+### Fine Calculation Logic
+
+The late fee engine is not a simple multiplication. It accounts for:
+- Business days only (weekends excluded)
+- Configurable daily rate via environment variable
+- Atomic stock restoration on return
+
+### Tech Stack
+
+| Layer | Technology | Rationale |
+|-------|-----------|-----------|
+| Language | Java 17 | Modern LTS with records, pattern matching, sealed classes |
+| Framework | Spring Boot 3 | Production-grade, native Spring Security integration |
+| Security | Spring Security + JWT | Stateless auth, scales horizontally |
+| Persistence | Spring Data JPA + PostgreSQL | ACID guarantees, mature ORM |
+| Testing | JUnit 5 + Mockito + Testcontainers | Full test pyramid, real DB on integration tests |
+| Documentation | Springdoc OpenAPI 3 | Auto-generated interactive docs |
+| Infrastructure | Docker + Docker Compose | Reproducible environments, deploy-ready |
 
 ---
 
-## 📋 Funcionalidades
+## Domain Model
 
-### 🔐 Autenticação & Autorização
-```http
-POST /api/auth/register
-POST /api/auth/login
 ```
-- Sistema JWT com refresh tokens
-- Roles: `ADMIN`, `USER`
-- Permissions granulares: `BOOK_READ`, `BOOK_WRITE`, `LOAN_CREATE`, etc.
-
-### 📖 Gerenciamento de Livros
-```http
-GET    /api/books          # Listar (com paginação)
-GET    /api/books/{id}     # Buscar por ID
-POST   /api/books          # Criar (requer BOOK_WRITE)
-PUT    /api/books/{id}     # Atualizar
-DELETE /api/books/{id}     # Deletar
+┌─────────────┐       ┌──────────────────┐       ┌─────────────┐
+│    User     │       │      Loan        │       │    Book     │
+├─────────────┤       ├──────────────────┤       ├─────────────┤
+│ id (PK)     │──┐    │ id (PK)          │    ┌──│ id (PK)     │
+│ username    │  └──<─│ userId (FK)      │    │  │ title       │
+│ password    │       │ bookId (FK)      │>───┘  │ author      │
+│ roles       │       │ loanedAt         │       │ isbn        │
+│ permissions │       │ dueOn            │       │ stockQty    │
+└─────────────┘       │ returnedAt       │       │ version     │ ← optimistic lock
+                      │ loanDebt         │       └─────────────┘
+                      │ status           │
+                      └──────────────────┘
 ```
 
-### 🔄 Sistema de Empréstimos
-```http
-POST  /api/loans           # Criar empréstimo
-PATCH /api/loans/{id}/return  # Devolver livro
-GET   /api/loans/user/{userId}  # Histórico do usuário
-```
+---
 
-**Lógica de Negócio:**
-- ✅ Valida disponibilidade do livro (estoque)
-- ✅ Calcula data de devolução (14 dias)
-- ✅ Aplica multa automática: `R$ 2,00/dia` de atraso
-- ✅ Atualiza estoque transacionalmente
+## API Reference
 
-**Exemplo de Resposta (com multa):**
+### Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/auth/register` | Register new user |
+| `POST` | `/api/auth/login` | Authenticate and receive JWT |
+
+### Books
+
+| Method | Endpoint | Auth Required |
+|--------|----------|---------------|
+| `GET` | `/api/books` | `BOOK_READ` |
+| `GET` | `/api/books/{id}` | `BOOK_READ` |
+| `POST` | `/api/books` | `BOOK_WRITE` |
+| `PUT` | `/api/books/{id}` | `BOOK_WRITE` |
+| `DELETE` | `/api/books/{id}` | `BOOK_DELETE` |
+
+### Loans
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/loans` | Create loan (validates stock) |
+| `PATCH` | `/api/loans/{id}/return` | Return book + calculate fine |
+| `GET` | `/api/loans/user/{userId}` | Loan history |
+
+**Loan response example (with late fee):**
+
 ```json
 {
   "id": 1,
@@ -103,50 +115,54 @@ GET   /api/loans/user/{userId}  # Histórico do usuário
   "dueOn": "2025-10-15",
   "returnedAt": "2025-10-20",
   "status": "RETURNED",
-  "loanDebt": 10.00  // 5 dias de atraso × R$2
+  "loanDebt": 10.00
 }
 ```
 
 ---
 
-## 🧪 Testes
+## Testing
 
 ```bash
-./mvnw test  # Executa toda suíte de testes
+./mvnw test
 ```
 
-**Cobertura de Testes:**
-- ✅ Testes Unitários (Services, Validators)
-- ✅ Testes de Integração (Controllers + Database)
-- ✅ Testes de Segurança (JWT, Roles, Permissions)
-- ✅ Testcontainers para PostgreSQL real nos testes
+The test suite covers three layers:
 
-**Exemplo de Teste:**
+**Unit Tests** — Service logic in isolation, using Mockito to mock dependencies. Core focus: fine calculation edge cases and stock validation.
+
+**Integration Tests** — Controllers tested end-to-end with Testcontainers spinning up a real PostgreSQL instance. No H2, no mocks at the DB layer.
+
+**Security Tests** — JWT validation, role enforcement, and permission boundaries tested against actual Spring Security filter chain.
+
 ```java
 @Test
 void shouldCalculateLateFeeWhenBookReturnedAfterDueDate() {
-    // Given: empréstimo com 5 dias de atraso
+    // Given: loan with 5 overdue days
     Loan loan = createLoanWithDueDate(LocalDate.now().minusDays(5));
-    
-    // When: livro é devolvido
+
+    // When: book is returned
     loanService.returnBook(loan.getId());
-    
-    // Then: multa de R$10 é aplicada
+
+    // Then: R$10 fine applied (5 days × R$2.00)
     assertEquals(new BigDecimal("10.00"), loan.getLoanDebt());
 }
 ```
 
 ---
 
-## 🐳 Execução com Docker
+## Running Locally
 
-### Opção 1: Docker Compose (Recomendado)
+### Option 1: Docker Compose (recommended)
+
 ```bash
 docker-compose up --build
 ```
-Sobe **API + PostgreSQL** configurados e integrados.
 
-### Opção 2: Apenas o Banco (desenvolvimento local)
+Starts API + PostgreSQL fully integrated.
+
+### Option 2: Database only (local development)
+
 ```bash
 docker run --name bookstore-db \
   -e POSTGRES_DB=bookstoredb \
@@ -158,75 +174,43 @@ docker run --name bookstore-db \
 ./mvnw spring-boot:run
 ```
 
----
+### Environment Variables
 
-## 📊 Diagrama de Entidades (ER)
-
-```
-┌─────────────┐       ┌─────────────┐       ┌─────────────┐
-│    User     │       │    Loan     │       │    Book     │
-├─────────────┤       ├─────────────┤       ├─────────────┤
-│ id (PK)     │──┐    │ id (PK)     │    ┌──│ id (PK)     │
-│ username    │  └──<│ userId (FK) │    │  │ title       │
-│ password    │       │ bookId (FK) │>───┘  │ author      │
-│ roles       │       │ loanedAt    │       │ isbn        │
-└─────────────┘       │ dueOn       │       │ stockQty    │
-                      │ returnedAt  │       └─────────────┘
-                      │ loanDebt    │
-                      └─────────────┘
-```
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/bookstoredb` | Database URL |
+| `JWT_SECRET` | `change-in-production` | JWT signing key |
+| `JWT_EXPIRATION` | `86400000` | Token expiration (ms) |
+| `LOAN_DAILY_FEE` | `2.00` | Daily late fee (BRL) |
 
 ---
 
-## 🛠️ Configuração & Variáveis de Ambiente
+## Key Engineering Challenges
 
-| Variável | Padrão | Descrição |
-|----------|--------|-----------|
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/bookstoredb` | URL do banco |
-| `JWT_SECRET` | `your-secret-key-change-in-production` | Chave secreta JWT |
-| `JWT_EXPIRATION` | `86400000` | Expiração do token (24h em ms) |
+**1. Concurrent Stock Decrement**
+When two users simultaneously request the last copy, both reads see `stockQty = 1`. Without coordination, both loans would be approved. Solved with JPA `@Version` — the second transaction detects a stale read and throws `OptimisticLockException`, which the service layer handles by returning a meaningful conflict response.
 
----
+**2. Permission Granularity Beyond Roles**
+Spring Security's default `hasRole()` wasn't enough. Implemented a custom `PermissionEvaluator` that resolves user-level permissions independently of their role hierarchy, enabling scenarios like read-only admin assistants or loan-only staff users.
 
-## 🎓 Aprendizados & Desafios
-
-Durante o desenvolvimento deste projeto, enfrentei e resolvi:
-
-1. **Concorrência no Estoque**: Implementei `@Version` (Optimistic Locking) para evitar race conditions quando múltiplos usuários pegam o último livro simultaneamente.
-
-2. **Granularidade de Permissões**: Não bastava ter `ROLE_ADMIN` - precisei de permissions específicas (ex: um usuário pode ter `LOAN_READ` mas não `LOAN_CREATE`).
-
-3. **Cálculo de Multas**: Desenvolvi uma lógica que considera apenas dias úteis e permite configuração externa da taxa de multa.
-
-4. **Testes de Integração Realistas**: Usei Testcontainers para garantir que os testes rodassem contra um PostgreSQL real, não H2.
+**3. Integration Tests Without H2**
+H2 dialects diverge from PostgreSQL in subtle ways (sequence behavior, constraint handling). Using Testcontainers ensures tests run against the exact same engine as production, catching issues H2 would silently ignore.
 
 ---
 
-## 🚧 Roadmap (Próximas Implementações)
+## Roadmap
 
-- [ ] Cache com Redis para buscas frequentes
-- [ ] Sistema de notificações (email) para livros próximos do vencimento
-- [ ] API de relatórios (livros mais emprestados, usuários com mais atrasos)
-- [ ] Upload de capas de livros (integração com AWS S3)
-- [ ] Rate limiting com Bucket4j
+- [ ] Redis cache for frequent book queries
+- [ ] Email notifications for upcoming due dates
+- [ ] Reporting endpoints (most borrowed books, top debtors)
+- [ ] AWS S3 integration for book cover uploads
+- [ ] Rate limiting with Bucket4j
 
 ---
 
-## 👤 Autor
+## Author
 
-**Pedro Barbosa**  
-Desenvolvedor Backend Java | Spring Boot Specialist
+**Pedro Barbosa** — Backend Developer, Java & Spring Boot
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin)](https://www.linkedin.com/in/pedrobbarbosa/)
 [![GitHub](https://img.shields.io/badge/GitHub-Follow-black?logo=github)](https://github.com/hubpedro)
-[![Email](https://img.shields.io/badge/Email-Contact-red?logo=gmail)](pedro.barbosa.dev@gmail.com)
-
----
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
----
-
-⭐ **Se este projeto foi útil, deixe uma estrela!**
